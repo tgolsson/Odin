@@ -63,7 +63,7 @@ parse_qt_linguist_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTI
 	section: ^Section
 
 	for value in ts.elements[0].value {
-		child_id := get_id(value) or_return
+		child_id := get_id(value) or return
 
 		// These should be <context>s.
 
@@ -79,7 +79,7 @@ parse_qt_linguist_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTI
 
 		section_name, _ := strings.intern_get(&translation.intern, "")
 		if !options.merge_sections {
-			value_text := get_str(ts.elements[section_name_id].value[0]) or_return
+			value_text := get_str(ts.elements[section_name_id].value[0]) or return
 			section_name, _ = strings.intern_get(&translation.intern, value_text)
 		}
 
@@ -111,12 +111,12 @@ parse_qt_linguist_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTI
 				return translation, .TS_File_Expected_Translation
 			}
 
-			source    := get_str(ts.elements[source_id].value[0]) or_return
+			source    := get_str(ts.elements[source_id].value[0]) or return
 			source, _  = strings.intern_get(&translation.intern, source)
 
 			xlat := ""
 			if !has_plurals {
-				xlat    = get_str(ts.elements[translation_id].value[0]) or_return
+				xlat    = get_str(ts.elements[translation_id].value[0]) or return
 				xlat, _ = strings.intern_get(&translation.intern, xlat)
 			}
 
@@ -149,7 +149,7 @@ parse_qt_linguist_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTI
 					if !numerus_found {
 						break
 					}
-					numerus := get_str(ts.elements[numerus_id].value[0]) or_return
+					numerus := get_str(ts.elements[numerus_id].value[0]) or return
 					numerus, _ = strings.intern_get(&translation.intern, numerus)
 					section[source][num_plurals] = numerus
 

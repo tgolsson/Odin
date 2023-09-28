@@ -11,7 +11,7 @@ destroy :: proc(img: ^image.Image) -> bool {
 	defer free(img)
 	bytes.buffer_destroy(&img.pixels)
 
-	info := img.metadata.(^image.Netpbm_Info) or_return
+	info := img.metadata.(^image.Netpbm_Info) or return
 
 	header_destroy(&info.header)
 	free(info)

@@ -464,7 +464,7 @@ inflate_from_context :: proc(using ctx: ^compress.Context_Memory_Input, raw := f
 	}
 
 	// Parse ZLIB stream without header.
-	inflate_raw(ctx, expected_output_size=expected_output_size) or_return
+	inflate_raw(ctx, expected_output_size=expected_output_size) or return
 
 	if !raw {
 		compress.discard_to_next_byte_lsb(ctx)
@@ -502,8 +502,8 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 		/*
 			Try to pre-allocate the output buffer.
 		*/
-		reserve(&z.output.buf, expected_output_size) or_return
-		resize (&z.output.buf, expected_output_size) or_return
+		reserve(&z.output.buf, expected_output_size) or return
+		resize (&z.output.buf, expected_output_size) or return
 	}
 
 	if len(z.output.buf) != expected_output_size {
@@ -520,9 +520,9 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 	defer free(z_offset)
 	defer free(codelength_ht)
 
-	z_repeat      = allocate_huffman_table() or_return
-	z_offset      = allocate_huffman_table() or_return
-	codelength_ht = allocate_huffman_table() or_return
+	z_repeat      = allocate_huffman_table() or return
+	z_offset      = allocate_huffman_table() or return
+	codelength_ht = allocate_huffman_table() or return
 
 	final := u32(0)
 	type  := u32(0)
@@ -569,8 +569,8 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 			// fmt.printf("Err: %v | Final: %v | Type: %v\n", err, final, type)
 			if type == 1 {
 				// Use fixed code lengths.
-				build_huffman(z_repeat, Z_FIXED_LENGTH[:]) or_return
-				build_huffman(z_offset, Z_FIXED_DIST[:])  or_return
+				build_huffman(z_repeat, Z_FIXED_LENGTH[:]) or return
+				build_huffman(z_offset, Z_FIXED_DIST[:])  or return
 			} else {
 				lencodes: [286+32+137]u8
 				codelength_sizes: [19]u8
@@ -588,13 +588,13 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 					s := compress.read_bits_lsb(z, 3)
 					codelength_sizes[Z_LENGTH_DEZIGZAG[i]] = u8(s)
 				}
-				build_huffman(codelength_ht, codelength_sizes[:]) or_return
+				build_huffman(codelength_ht, codelength_sizes[:]) or return
 
 				n = 0
 				c: u16
 
 				for n < ntot {
-					c = decode_huffman(z, codelength_ht) or_return
+					c = decode_huffman(z, codelength_ht) or return
 
 					if c < 0 || c >= 19 {
 						return .Huffman_Bad_Code_Lengths
@@ -635,10 +635,10 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 					return .Huffman_Bad_Code_Lengths
 				}
 
-				build_huffman(z_repeat, lencodes[:hlit])     or_return
-				build_huffman(z_offset, lencodes[hlit:ntot]) or_return
+				build_huffman(z_repeat, lencodes[:hlit])     or return
+				build_huffman(z_offset, lencodes[hlit:ntot]) or return
 			}
-			parse_huffman_block(z, z_repeat, z_offset) or_return
+			parse_huffman_block(z, z_repeat, z_offset) or return
 		}
 		if final == 1 {
 			break
@@ -646,7 +646,7 @@ inflate_raw :: proc(z: ^$C, expected_output_size := -1, allocator := context.all
 	}
 
 	if int(z.bytes_written) != len(z.output.buf) {
-		resize(&z.output.buf, int(z.bytes_written)) or_return
+		resize(&z.output.buf, int(z.bytes_written)) or return
 	}
 
 	return nil

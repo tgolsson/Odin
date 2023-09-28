@@ -548,7 +548,7 @@ __checkShaderError :: proc(shader: u32, type: string) {
 	}
 }
 
-// TODO good case for or_return
+// TODO good case for or return
 __createShader :: proc(
 	shader: ^Shader,
 	header: string,

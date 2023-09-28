@@ -23,7 +23,7 @@ _mkdir_all :: proc(path: string, perm: File_Mode) -> Error {
 	fix_root_directory :: proc(p: string) -> (s: string, allocated: bool, err: runtime.Allocator_Error) {
 		if len(p) == len(`\\?\c:`) {
 			if is_path_separator(p[0]) && is_path_separator(p[1]) && p[2] == '?' && is_path_separator(p[3]) && p[5] == ':' {
-				s = strings.concatenate({p, `\`}, _file_allocator()) or_return
+				s = strings.concatenate({p, `\`}, _file_allocator()) or return
 				allocated = true
 				return
 			}
@@ -50,11 +50,11 @@ _mkdir_all :: proc(path: string, perm: File_Mode) -> Error {
 	}
 
 	if j > 1 {
-		new_path, allocated := fix_root_directory(path[:j-1]) or_return
+		new_path, allocated := fix_root_directory(path[:j-1]) or return
 		defer if allocated {
 			delete(new_path, _file_allocator())
 		}
-		mkdir_all(new_path, perm) or_return
+		mkdir_all(new_path, perm) or return
 	}
 
 	err = mkdir(path, perm)

@@ -188,7 +188,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 		options -= {.return_header}
 	}
 
-	header := image.read_data(ctx, image.QOI_Header) or_return
+	header := image.read_data(ctx, image.QOI_Header) or return
 	if header.magic != image.QOI_Magic {
 		return img, .Invalid_Signature
 	}
@@ -246,19 +246,19 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 	pixels := img.pixels.buf[:]
 
 	decode: for len(pixels) > 0 {
-		data := image.read_u8(ctx) or_return
+		data := image.read_u8(ctx) or return
 
 		tag := QOI_Opcode_Tag(data)
 		#partial switch tag {
 		case .RGB:
-			pix.rgb = image.read_data(ctx, RGB_Pixel) or_return
+			pix.rgb = image.read_data(ctx, RGB_Pixel) or return
 
 			#no_bounds_check {
 				seen[qoi_hash(pix)] = pix	
 			}
 
 		case .RGBA:
-			pix = image.read_data(ctx, RGBA_Pixel) or_return
+			pix = image.read_data(ctx, RGBA_Pixel) or return
 
 			#no_bounds_check {
 				seen[qoi_hash(pix)] = pix	
@@ -283,7 +283,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 					}
 
 				case .LUMA:
-					data2 := image.read_u8(ctx) or_return
+					data2 := image.read_u8(ctx) or return
 
 					diff_g := (data & 63) - 32
 					diff_r := diff_g - 8 + ((data2 >> 4) & 15)

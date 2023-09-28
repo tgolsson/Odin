@@ -74,8 +74,8 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 	}
 
 	read_name :: proc(r: ^Reader) -> (value: string, err: Read_Error) {
-		len  := read_value(r, u8)             or_return
-		data := read_array(r, byte, int(len)) or_return
+		len  := read_value(r, u8)             or return
+		data := read_array(r, byte, int(len)) or return
 		return string(data[:len]), nil
 	}
 
@@ -84,9 +84,9 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 		count := 0
 		defer meta_data = meta_data[:count]
 		for &m in meta_data {
-			m.name = read_name(r) or_return
+			m.name = read_name(r) or return
 
-			type := read_value(r, Meta_Value_Type) or_return
+			type := read_value(r, Meta_Value_Type) or return
 			if type > max(Meta_Value_Type) {
 				if r.print_error {
 					fmt.eprintf("HxA Error: file '%s' has meta value type %d. Maximum value is %d\n",
@@ -95,15 +95,15 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 				err = .Invalid_Data
 				return
 			}
-			array_length := read_value(r, u32le) or_return
+			array_length := read_value(r, u32le) or return
 
 			switch type {
-			case .Int64:  m.value = read_array(r, i64le, int(array_length))      or_return
-			case .Double: m.value = read_array(r, f64le, int(array_length))      or_return
-			case .Node:   m.value = read_array(r, Node_Index, int(array_length)) or_return
-			case .Text:   m.value = read_string(r, int(array_length))            or_return
-			case .Binary: m.value = read_array(r, byte, int(array_length))       or_return
-			case .Meta:   m.value = read_meta(r, array_length)                   or_return
+			case .Int64:  m.value = read_array(r, i64le, int(array_length))      or return
+			case .Double: m.value = read_array(r, f64le, int(array_length))      or return
+			case .Node:   m.value = read_array(r, Node_Index, int(array_length)) or return
+			case .Text:   m.value = read_string(r, int(array_length))            or return
+			case .Binary: m.value = read_array(r, byte, int(array_length))       or return
+			case .Meta:   m.value = read_meta(r, array_length)                   or return
 			}
 
 			count += 1
@@ -112,14 +112,14 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 	}
 
 	read_layer_stack :: proc(r: ^Reader, capacity: u32le) -> (layers: Layer_Stack, err: Read_Error) {
-		stack_count := read_value(r, u32le) or_return
+		stack_count := read_value(r, u32le) or return
 		layer_count := 0
 		layers = make(Layer_Stack, stack_count)
 		defer layers = layers[:layer_count]
 		for &layer in layers {
-			layer.name = read_name(r) or_return
-			layer.components = read_value(r, u8) or_return
-			type := read_value(r, Layer_Data_Type) or_return
+			layer.name = read_name(r) or return
+			layer.components = read_value(r, u8) or return
+			type := read_value(r, Layer_Data_Type) or return
 			if type > max(type) {
 				if r.print_error {
 					fmt.eprintf("HxA Error: file '%s' has layer data type %d. Maximum value is %d\n",
@@ -131,10 +131,10 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 			data_len := int(layer.components) * int(capacity)
 
 			switch type {
-			case .Uint8:  layer.data = read_array(r, u8,    data_len) or_return
-			case .Int32:  layer.data = read_array(r, i32le, data_len) or_return
-			case .Float:  layer.data = read_array(r, f32le, data_len) or_return
-			case .Double: layer.data = read_array(r, f64le, data_len) or_return
+			case .Uint8:  layer.data = read_array(r, u8,    data_len) or return
+			case .Int32:  layer.data = read_array(r, i32le, data_len) or return
+			case .Float:  layer.data = read_array(r, f32le, data_len) or return
+			case .Double: layer.data = read_array(r, f64le, data_len) or return
 			}
 			layer_count += 1
 		}
@@ -179,7 +179,7 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 
 	for node_idx in 0..<header.internal_node_count {
 		node := &file.nodes[node_count]
-		type := read_value(r, Node_Type) or_return
+		type := read_value(r, Node_Type) or return
 		if type > max(Node_Type) {
 			if r.print_error {
 				fmt.eprintf("HxA Error: file '%s' has node type %d. Maximum value is %d\n",
@@ -190,7 +190,7 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 		}
 		node_count += 1
 
-		node.meta_data = read_meta(r, read_value(r, u32le) or_return) or_return
+		node.meta_data = read_meta(r, read_value(r, u32le) or return) or return
 
 		switch type {
 		case .Meta_Only:
@@ -198,35 +198,35 @@ read :: proc(data: []byte, filename := "<input>", print_error := false, allocato
 		case .Geometry:
 			g: Node_Geometry
 
-			g.vertex_count      = read_value(r, u32le)                     or_return
-			g.vertex_stack      = read_layer_stack(r, g.vertex_count)      or_return
-			g.edge_corner_count = read_value(r, u32le)                     or_return
-			g.corner_stack      = read_layer_stack(r, g.edge_corner_count) or_return
+			g.vertex_count      = read_value(r, u32le)                     or return
+			g.vertex_stack      = read_layer_stack(r, g.vertex_count)      or return
+			g.edge_corner_count = read_value(r, u32le)                     or return
+			g.corner_stack      = read_layer_stack(r, g.edge_corner_count) or return
 			if header.version > 2 {
-				g.edge_stack = read_layer_stack(r, g.edge_corner_count) or_return
+				g.edge_stack = read_layer_stack(r, g.edge_corner_count) or return
 			}
-			g.face_count = read_value(r, u32le)              or_return
-			g.face_stack = read_layer_stack(r, g.face_count) or_return
+			g.face_count = read_value(r, u32le)              or return
+			g.face_stack = read_layer_stack(r, g.face_count) or return
 
 			node.content = g
 
 		case .Image:
 			img: Node_Image
 
-			img.type = read_value(r, Image_Type) or_return
+			img.type = read_value(r, Image_Type) or return
 			dimensions := int(img.type)
 			if img.type == .Image_Cube {
 				dimensions = 2
 			}
 			img.resolution = {1, 1, 1}
 			for d in 0..<dimensions {
-				img.resolution[d] = read_value(r, u32le) or_return
+				img.resolution[d] = read_value(r, u32le) or return
 			}
 			size := img.resolution[0]*img.resolution[1]*img.resolution[2]
 			if img.type == .Image_Cube {
 				size *= 6
 			}
-			img.image_stack = read_layer_stack(r, size) or_return
+			img.image_stack = read_layer_stack(r, size) or return
 
 			node.content = img
 		}

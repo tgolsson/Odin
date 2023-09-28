@@ -27,7 +27,7 @@ to_valid_utf8 :: proc(s, replacement: string, allocator := context.allocator) ->
 	}
 
 	b: Builder
-	builder_init(&b, 0, 0, allocator) or_return
+	builder_init(&b, 0, 0, allocator) or return
 
 	s := s
 	for c, i in s {
@@ -103,7 +103,7 @@ Output:
 */
 to_lower :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	for r in s {
 		write_rune(&b, unicode.to_lower(r))
 	}
@@ -138,7 +138,7 @@ Output:
 */
 to_upper :: proc(s: string, allocator := context.allocator) -> (res: string, err: mem.Allocator_Error) #optional_allocator_error {
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	for r in s {
 		write_rune(&b, unicode.to_upper(r))
 	}
@@ -264,7 +264,7 @@ to_camel_case :: proc(s: string, allocator := context.allocator) -> (res: string
 	s := s
 	s = trim_space(s)
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	w := to_writer(&b)
 
 	string_case_iterator(w, s, proc(w: io.Writer, prev, curr, next: rune) {
@@ -300,7 +300,7 @@ to_pascal_case :: proc(s: string, allocator := context.allocator) -> (res: strin
 	s := s
 	s = trim_space(s)
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	w := to_writer(&b)
 
 	string_case_iterator(w, s, proc(w: io.Writer, prev, curr, next: rune) {
@@ -359,7 +359,7 @@ to_delimiter_case :: proc(
 	s := s
 	s = trim_space(s)
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	w := to_writer(&b)
 
 	adjust_case := unicode.to_upper if all_upper_case else unicode.to_lower
@@ -548,7 +548,7 @@ to_ada_case :: proc(s: string, allocator := context.allocator) -> (res: string, 
 	s := s
 	s = trim_space(s)
 	b: Builder
-	builder_init(&b, 0, len(s), allocator) or_return
+	builder_init(&b, 0, len(s), allocator) or return
 	w := to_writer(&b)
 
 	string_case_iterator(w, s, proc(w: io.Writer, prev, curr, next: rune) {

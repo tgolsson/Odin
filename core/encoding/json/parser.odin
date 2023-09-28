@@ -178,7 +178,7 @@ parse_value :: proc(p: ^Parser) -> (value: Value, err: Error) {
 
 parse_array :: proc(p: ^Parser) -> (value: Value, err: Error) {
 	err = .None
-	expect_token(p, .Open_Bracket) or_return
+	expect_token(p, .Open_Bracket) or return
 
 	array: Array
 	array.allocator = p.allocator
@@ -190,7 +190,7 @@ parse_array :: proc(p: ^Parser) -> (value: Value, err: Error) {
 	}
 
 	for p.curr_token.kind != .Close_Bracket {
-		elem := parse_value(p) or_return
+		elem := parse_value(p) or return
 		append(&array, elem)
 		
 		if parse_comma(p) {
@@ -198,7 +198,7 @@ parse_array :: proc(p: ^Parser) -> (value: Value, err: Error) {
 		}
 	}
 
-	expect_token(p, .Close_Bracket) or_return
+	expect_token(p, .Close_Bracket) or return
 	value = array
 	return
 }
@@ -219,7 +219,7 @@ bytes_make :: proc(size, alignment: int, allocator: mem.Allocator) -> (bytes: []
 
 clone_string :: proc(s: string, allocator: mem.Allocator) -> (str: string, err: Error) {
 	n := len(s)
-	b := bytes_make(n+1, 1, allocator) or_return
+	b := bytes_make(n+1, 1, allocator) or return
 	copy(b, s)
 	if len(b) > n {
 		b[n] = 0
@@ -253,9 +253,9 @@ parse_object_body :: proc(p: ^Parser, end_token: Token_Kind) -> (obj: Object, er
 	}
 
 	for p.curr_token.kind != end_token {
-		key := parse_object_key(p, p.allocator) or_return
-		parse_colon(p) or_return
-		elem := parse_value(p) or_return
+		key := parse_object_key(p, p.allocator) or return
+		parse_colon(p) or return
+		elem := parse_value(p) or return
 
 		if key in obj {
 			err = .Duplicate_Object_Key
@@ -273,9 +273,9 @@ parse_object_body :: proc(p: ^Parser, end_token: Token_Kind) -> (obj: Object, er
 }
 
 parse_object :: proc(p: ^Parser) -> (value: Value, err: Error) {
-	expect_token(p, .Open_Brace) or_return
-	obj := parse_object_body(p, .Close_Brace) or_return
-	expect_token(p, .Close_Brace) or_return
+	expect_token(p, .Open_Brace) or return
+	obj := parse_object_body(p, .Close_Brace) or return
+	expect_token(p, .Close_Brace) or return
 	return obj, .None
 }
 
@@ -353,7 +353,7 @@ unquote_string :: proc(token: Token, spec: Specification, allocator := context.a
 		return clone_string(s, allocator)
 	}
 
-	b := bytes_make(len(s) + 2*utf8.UTF_MAX, 1, allocator) or_return
+	b := bytes_make(len(s) + 2*utf8.UTF_MAX, 1, allocator) or return
 	w := copy(b, s[0:i])
 
 	if len(b) == 0 && allocator.data == nil {

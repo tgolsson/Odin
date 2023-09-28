@@ -14,7 +14,7 @@ platform_memory_alloc :: proc "contextless" (to_commit, to_reserve: uint) -> (bl
 	total_to_reserved := max(to_reserve, size_of(Platform_Memory_Block))
 	to_commit = clamp(to_commit, size_of(Platform_Memory_Block), total_to_reserved)
 	
-	data := reserve(total_to_reserved) or_return
+	data := reserve(total_to_reserved) or return
 	commit(raw_data(data), to_commit)
 	
 	block = (^Platform_Memory_Block)(raw_data(data))
@@ -38,7 +38,7 @@ platform_memory_commit :: proc "contextless" (block: ^Platform_Memory_Block, to_
 		return .Out_Of_Memory
 	}
 
-	commit(block, to_commit) or_return
+	commit(block, to_commit) or return
 	block.committed = to_commit
 	return nil
 }

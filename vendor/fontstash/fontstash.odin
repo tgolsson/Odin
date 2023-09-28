@@ -301,7 +301,7 @@ __AtlasAddRect :: proc(using ctx: ^FontContext, rw, rh: int) -> (rx, ry: int, ok
 }
 
 __AtlasAddWhiteRect :: proc(ctx: ^FontContext, w, h: int) -> bool {
-	gx, gy := __AtlasAddRect(ctx, w, h) or_return
+	gx, gy := __AtlasAddRect(ctx, w, h) or return
 
 	// Rasterize
 	dst := ctx.textureData[gx + gy * ctx.width:]
@@ -493,7 +493,7 @@ __getGlyph :: proc(
 	if !rect_ok {
 		// try again with expanded
 		ExpandAtlas(ctx, ctx.width * 2, ctx.height * 2)
-		gx, gy = __AtlasAddRect(ctx, int(gw), int(gh)) or_return
+		gx, gy = __AtlasAddRect(ctx, int(gw), int(gh)) or return
 	}
 	
 	// Init glyph.

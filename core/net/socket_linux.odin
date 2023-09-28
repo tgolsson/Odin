@@ -73,7 +73,7 @@ _dial_tcp_from_endpoint :: proc(endpoint: Endpoint, options := default_tcp_optio
 	}
 
 	family := family_from_endpoint(endpoint)
-	sock := create_socket(family, .TCP) or_return
+	sock := create_socket(family, .TCP) or return
 	skt = sock.(TCP_Socket)
 
 	// NOTE(tetra): This is so that if we crash while the socket is open, we can
@@ -111,7 +111,7 @@ _listen_tcp :: proc(interface_endpoint: Endpoint, backlog := 1000) -> (skt: TCP_
 	assert(backlog > 0 && i32(backlog) < max(i32))
 
 	family := family_from_endpoint(interface_endpoint)
-	sock := create_socket(family, .TCP) or_return
+	sock := create_socket(family, .TCP) or return
 	skt = sock.(TCP_Socket)
 
 	// NOTE(tetra): This is so that if we crash while the socket is open, we can
@@ -119,9 +119,9 @@ _listen_tcp :: proc(interface_endpoint: Endpoint, backlog := 1000) -> (skt: TCP_
 	// use the same address immediately.
 	//
 	// TODO(tetra, 2022-02-15): Confirm that this doesn't mean other processes can hijack the address!
-	set_option(sock, .Reuse_Address, true) or_return
+	set_option(sock, .Reuse_Address, true) or return
 
-	bind(sock, interface_endpoint) or_return
+	bind(sock, interface_endpoint) or return
 
 	res := os.listen(os.Socket(skt), backlog)
 	if res != os.ERROR_NONE {

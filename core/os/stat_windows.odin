@@ -22,7 +22,7 @@ full_path_from_name :: proc(name: string, allocator := context.allocator) -> (pa
 			return "", Errno(win32.GetLastError())
 		}
 		if n <= u32(len(buf)) {
-			return win32.utf16_to_utf8(buf[:n], allocator) or_else "", ERROR_NONE
+			return win32.utf16_to_utf8(buf[:n], allocator) or else "", ERROR_NONE
 		}
 		resize(&buf, len(buf)*2)
 	}
@@ -140,7 +140,7 @@ cleanpath_from_handle :: proc(fd: Handle) -> (string, Errno) {
 	if err != 0 {
 		return "", err
 	}
-	return win32.utf16_to_utf8(buf, context.allocator) or_else "", err
+	return win32.utf16_to_utf8(buf, context.allocator) or else "", err
 }
 @(private)
 cleanpath_from_handle_u16 :: proc(fd: Handle, allocator: runtime.Allocator) -> ([]u16, Errno) {
@@ -161,7 +161,7 @@ cleanpath_from_handle_u16 :: proc(fd: Handle, allocator: runtime.Allocator) -> (
 cleanpath_from_buf :: proc(buf: []u16) -> string {
 	buf := buf
 	buf = cleanpath_strip_prefix(buf)
-	return win32.utf16_to_utf8(buf, context.allocator) or_else ""
+	return win32.utf16_to_utf8(buf, context.allocator) or else ""
 }
 
 @(private)

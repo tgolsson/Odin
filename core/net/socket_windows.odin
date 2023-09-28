@@ -67,7 +67,7 @@ _dial_tcp_from_endpoint :: proc(endpoint: Endpoint, options := default_tcp_optio
 	}
 
 	family := family_from_endpoint(endpoint)
-	sock := create_socket(family, .TCP) or_return
+	sock := create_socket(family, .TCP) or return
 	socket = sock.(TCP_Socket)
 
 	// NOTE(tetra): This is so that if we crash while the socket is open, we can
@@ -103,14 +103,14 @@ _bind :: proc(socket: Any_Socket, ep: Endpoint) -> (err: Network_Error) {
 @(private)
 _listen_tcp :: proc(interface_endpoint: Endpoint, backlog := 1000) -> (socket: TCP_Socket, err: Network_Error) {
 	family := family_from_endpoint(interface_endpoint)
-	sock := create_socket(family, .TCP) or_return
+	sock := create_socket(family, .TCP) or return
 	socket = sock.(TCP_Socket)
 
 	// NOTE(tetra): While I'm not 100% clear on it, my understanding is that this will
 	// prevent hijacking of the server's endpoint by other applications.
-	set_option(socket, .Exclusive_Addr_Use, true) or_return
+	set_option(socket, .Exclusive_Addr_Use, true) or return
 
-	bind(sock, interface_endpoint) or_return
+	bind(sock, interface_endpoint) or return
 
 	if res := win.listen(win.SOCKET(socket), i32(backlog)); res == win.SOCKET_ERROR {
 		err = Listen_Error(win.WSAGetLastError())

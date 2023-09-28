@@ -150,7 +150,7 @@ percent_decode :: proc(encoded_string: string, allocator := context.allocator) -
 			return // percent without encoded value
 		}
 
-		val := hex.decode_sequence(s[:2]) or_return
+		val := hex.decode_sequence(s[:2]) or return
 		strings.write_byte(&b, val)
 		s = s[2:]
 	}

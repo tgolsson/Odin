@@ -20,11 +20,11 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 
 	switch x in a.variant {
 	case Type_Info_Named:
-		y := b.variant.(Type_Info_Named) or_return
+		y := b.variant.(Type_Info_Named) or return
 		return x.base == y.base
 
 	case Type_Info_Integer:
-		y := b.variant.(Type_Info_Integer) or_return
+		y := b.variant.(Type_Info_Integer) or return
 		return x.signed == y.signed && x.endianness == y.endianness
 
 	case Type_Info_Rune:
@@ -60,20 +60,20 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 		return ok
 
 	case Type_Info_Pointer:
-		y := b.variant.(Type_Info_Pointer) or_return
+		y := b.variant.(Type_Info_Pointer) or return
 		return are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Multi_Pointer:
-		y := b.variant.(Type_Info_Multi_Pointer) or_return
+		y := b.variant.(Type_Info_Multi_Pointer) or return
 		return are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Soa_Pointer:
-		y := b.variant.(Type_Info_Soa_Pointer) or_return
+		y := b.variant.(Type_Info_Soa_Pointer) or return
 		return are_types_identical(x.elem, y.elem)
 
 
 	case Type_Info_Procedure:
-		y := b.variant.(Type_Info_Procedure) or_return
+		y := b.variant.(Type_Info_Procedure) or return
 		switch {
 		case x.variadic   != y.variadic,
 		     x.convention != y.convention:
@@ -83,26 +83,26 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 		return are_types_identical(x.params, y.params) && are_types_identical(x.results, y.results)
 
 	case Type_Info_Array:
-		y := b.variant.(Type_Info_Array) or_return
+		y := b.variant.(Type_Info_Array) or return
 		if x.count != y.count { return false }
 		return are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Enumerated_Array:
-		y := b.variant.(Type_Info_Enumerated_Array) or_return
+		y := b.variant.(Type_Info_Enumerated_Array) or return
 		if x.count != y.count { return false }
 		return are_types_identical(x.index, y.index) &&
 		       are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Dynamic_Array:
-		y := b.variant.(Type_Info_Dynamic_Array) or_return
+		y := b.variant.(Type_Info_Dynamic_Array) or return
 		return are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Slice:
-		y := b.variant.(Type_Info_Slice) or_return
+		y := b.variant.(Type_Info_Slice) or return
 		return are_types_identical(x.elem, y.elem)
 
 	case Type_Info_Parameters:
-		y := b.variant.(Type_Info_Parameters) or_return
+		y := b.variant.(Type_Info_Parameters) or return
 		if len(x.types) != len(y.types) { return false }
 		for _, i in x.types {
 			xt, yt := x.types[i], y.types[i]
@@ -113,7 +113,7 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 		return true
 
 	case Type_Info_Struct:
-		y := b.variant.(Type_Info_Struct) or_return
+		y := b.variant.(Type_Info_Struct) or return
 	   	switch {
 		case len(x.types)    != len(y.types),
 		     x.is_packed     != y.is_packed,
@@ -136,7 +136,7 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 		return true
 
 	case Type_Info_Union:
-		y := b.variant.(Type_Info_Union) or_return
+		y := b.variant.(Type_Info_Union) or return
 		if len(x.variants) != len(y.variants) { return false }
 
 		for _, i in x.variants {
@@ -150,27 +150,27 @@ are_types_identical :: proc(a, b: ^Type_Info) -> bool {
 		return false
 
 	case Type_Info_Map:
-		y := b.variant.(Type_Info_Map) or_return
+		y := b.variant.(Type_Info_Map) or return
 		return are_types_identical(x.key, y.key) && are_types_identical(x.value, y.value)
 
 	case Type_Info_Bit_Set:
-		y := b.variant.(Type_Info_Bit_Set) or_return
+		y := b.variant.(Type_Info_Bit_Set) or return
 		return x.elem == y.elem && x.lower == y.lower && x.upper == y.upper
 
 	case Type_Info_Simd_Vector:
-		y := b.variant.(Type_Info_Simd_Vector) or_return
+		y := b.variant.(Type_Info_Simd_Vector) or return
 		return x.count == y.count && x.elem == y.elem
 
 	case Type_Info_Relative_Pointer:
-		y := b.variant.(Type_Info_Relative_Pointer) or_return
+		y := b.variant.(Type_Info_Relative_Pointer) or return
 		return x.base_integer == y.base_integer && x.pointer == y.pointer
 
 	case Type_Info_Relative_Multi_Pointer:
-		y := b.variant.(Type_Info_Relative_Multi_Pointer) or_return
+		y := b.variant.(Type_Info_Relative_Multi_Pointer) or return
 		return x.base_integer == y.base_integer && x.pointer == y.pointer
 		
 	case Type_Info_Matrix:
-		y := b.variant.(Type_Info_Matrix) or_return
+		y := b.variant.(Type_Info_Matrix) or return
 		if x.row_count != y.row_count { return false }
 		if x.column_count != y.column_count { return false }
 		return are_types_identical(x.elem, y.elem)
@@ -421,249 +421,249 @@ write_type_writer :: proc(w: io.Writer, ti: ^Type_Info, n_written: ^int = nil) -
 		n_written^ += n
 	}
 	if ti == nil {
-		io.write_string(w, "nil", &n) or_return
+		io.write_string(w, "nil", &n) or return
 		return
 	}
 	
 	switch info in ti.variant {
 	case Type_Info_Named:
-		io.write_string(w, info.name, &n) or_return
+		io.write_string(w, info.name, &n) or return
 	case Type_Info_Integer:
 		switch ti.id {
-		case int:     io.write_string(w, "int",     &n) or_return
-		case uint:    io.write_string(w, "uint",    &n) or_return
-		case uintptr: io.write_string(w, "uintptr", &n) or_return
+		case int:     io.write_string(w, "int",     &n) or return
+		case uint:    io.write_string(w, "uint",    &n) or return
+		case uintptr: io.write_string(w, "uintptr", &n) or return
 		case:
-			io.write_byte(w, 'i' if info.signed else 'u', &n) or_return
-			io.write_i64(w, i64(8*ti.size), 10,           &n) or_return
+			io.write_byte(w, 'i' if info.signed else 'u', &n) or return
+			io.write_i64(w, i64(8*ti.size), 10,           &n) or return
 			switch info.endianness {
 			case .Platform: // Okay
-			case .Little: io.write_string(w, "le", &n) or_return
-			case .Big:    io.write_string(w, "be", &n) or_return
+			case .Little: io.write_string(w, "le", &n) or return
+			case .Big:    io.write_string(w, "be", &n) or return
 			}
 		}
 	case Type_Info_Rune:
-		io.write_string(w, "rune", &n) or_return
+		io.write_string(w, "rune", &n) or return
 	case Type_Info_Float:
-		io.write_byte(w, 'f', &n)               or_return
-		io.write_i64(w, i64(8*ti.size), 10, &n) or_return
+		io.write_byte(w, 'f', &n)               or return
+		io.write_i64(w, i64(8*ti.size), 10, &n) or return
 		switch info.endianness {
 		case .Platform: // Okay
-		case .Little: io.write_string(w, "le", &n) or_return
-		case .Big:    io.write_string(w, "be", &n) or_return
+		case .Little: io.write_string(w, "le", &n) or return
+		case .Big:    io.write_string(w, "be", &n) or return
 		}
 	case Type_Info_Complex:
-		io.write_string(w, "complex", &n)       or_return
-		io.write_i64(w, i64(8*ti.size), 10, &n) or_return
+		io.write_string(w, "complex", &n)       or return
+		io.write_i64(w, i64(8*ti.size), 10, &n) or return
 	case Type_Info_Quaternion:
-		io.write_string(w, "quaternion", &n)    or_return
-		io.write_i64(w, i64(8*ti.size), 10, &n) or_return
+		io.write_string(w, "quaternion", &n)    or return
+		io.write_i64(w, i64(8*ti.size), 10, &n) or return
 	case Type_Info_String:
 		if info.is_cstring {
-			io.write_string(w, "cstring", &n) or_return
+			io.write_string(w, "cstring", &n) or return
 		} else {
-			io.write_string(w, "string", &n)  or_return
+			io.write_string(w, "string", &n)  or return
 		}
 	case Type_Info_Boolean:
 		switch ti.id {
-		case bool: io.write_string(w, "bool", &n) or_return
+		case bool: io.write_string(w, "bool", &n) or return
 		case:
-			io.write_byte(w, 'b', &n)               or_return
-			io.write_i64(w, i64(8*ti.size), 10, &n) or_return
+			io.write_byte(w, 'b', &n)               or return
+			io.write_i64(w, i64(8*ti.size), 10, &n) or return
 		}
 	case Type_Info_Any:
-		io.write_string(w, "any", &n) or_return
+		io.write_string(w, "any", &n) or return
 
 	case Type_Info_Type_Id:
-		io.write_string(w, "typeid", &n) or_return
+		io.write_string(w, "typeid", &n) or return
 
 	case Type_Info_Pointer:
 		if info.elem == nil {
-			io.write_string(w, "rawptr", &n) or_return
+			io.write_string(w, "rawptr", &n) or return
 		} else {
-			io.write_string(w, "^", &n) or_return
-			write_type(w, info.elem, &n) or_return
+			io.write_string(w, "^", &n) or return
+			write_type(w, info.elem, &n) or return
 		}
 	case Type_Info_Multi_Pointer:
-		io.write_string(w, "[^]", &n) or_return
-		write_type(w, info.elem, &n) or_return
+		io.write_string(w, "[^]", &n) or return
+		write_type(w, info.elem, &n) or return
 	case Type_Info_Soa_Pointer:
-		io.write_string(w, "#soa ^", &n) or_return
-		write_type(w, info.elem, &n) or_return
+		io.write_string(w, "#soa ^", &n) or return
+		write_type(w, info.elem, &n) or return
 	case Type_Info_Procedure:
-		io.write_string(w, "proc", &n) or_return
+		io.write_string(w, "proc", &n) or return
 		if info.params == nil {
-			io.write_string(w, "()", &n) or_return
+			io.write_string(w, "()", &n) or return
 		} else {
 			t := info.params.variant.(Type_Info_Parameters)
-			io.write_string(w, "(", &n) or_return
+			io.write_string(w, "(", &n) or return
 			for t, i in t.types {
 				if i > 0 {
-					io.write_string(w, ", ", &n) or_return
+					io.write_string(w, ", ", &n) or return
 				}
-				write_type(w, t, &n) or_return
+				write_type(w, t, &n) or return
 			}
-			io.write_string(w, ")", &n) or_return
+			io.write_string(w, ")", &n) or return
 		}
 		if info.results != nil {
-			io.write_string(w, " -> ", &n)  or_return
-			write_type(w, info.results, &n) or_return
+			io.write_string(w, " -> ", &n)  or return
+			write_type(w, info.results, &n) or return
 		}
 	case Type_Info_Parameters:
 		count := len(info.names)
 		if count != 1 { 
-			io.write_string(w, "(", &n) or_return 
+			io.write_string(w, "(", &n) or return
 		}
 		for name, i in info.names {
-			if i > 0 { io.write_string(w, ", ", &n) or_return }
+			if i > 0 { io.write_string(w, ", ", &n) or return }
 
 			t := info.types[i]
 
 			if len(name) > 0 {
-				io.write_string(w, name, &n) or_return
-				io.write_string(w, ": ", &n) or_return
+				io.write_string(w, name, &n) or return
+				io.write_string(w, ": ", &n) or return
 			}
-			write_type(w, t, &n) or_return
+			write_type(w, t, &n) or return
 		}
 		if count != 1 { 
-			io.write_string(w, ")", &n) or_return 
+			io.write_string(w, ")", &n) or return
 		}
 
 	case Type_Info_Array:
-		io.write_string(w, "[",              &n) or_return
-		io.write_i64(w, i64(info.count), 10, &n) or_return
-		io.write_string(w, "]",              &n) or_return
-		write_type(w, info.elem,             &n) or_return
+		io.write_string(w, "[",              &n) or return
+		io.write_i64(w, i64(info.count), 10, &n) or return
+		io.write_string(w, "]",              &n) or return
+		write_type(w, info.elem,             &n) or return
 
 	case Type_Info_Enumerated_Array:
 		if info.is_sparse {
-			io.write_string(w, "#sparse", &n) or_return
+			io.write_string(w, "#sparse", &n) or return
 		}
-		io.write_string(w, "[",   &n) or_return
-		write_type(w, info.index, &n) or_return
-		io.write_string(w, "]",   &n) or_return
-		write_type(w, info.elem,  &n) or_return
+		io.write_string(w, "[",   &n) or return
+		write_type(w, info.index, &n) or return
+		io.write_string(w, "]",   &n) or return
+		write_type(w, info.elem,  &n) or return
 
 	case Type_Info_Dynamic_Array:
-		io.write_string(w, "[dynamic]", &n) or_return
-		write_type(w, info.elem,        &n) or_return
+		io.write_string(w, "[dynamic]", &n) or return
+		write_type(w, info.elem,        &n) or return
 	case Type_Info_Slice:
-		io.write_string(w, "[]", &n) or_return
-		write_type(w, info.elem, &n) or_return
+		io.write_string(w, "[]", &n) or return
+		write_type(w, info.elem, &n) or return
 
 	case Type_Info_Map:
-		io.write_string(w, "map[", &n) or_return
-		write_type(w, info.key,    &n) or_return
-		io.write_byte(w, ']',      &n) or_return
-		write_type(w, info.value,  &n) or_return
+		io.write_string(w, "map[", &n) or return
+		write_type(w, info.key,    &n) or return
+		io.write_byte(w, ']',      &n) or return
+		write_type(w, info.value,  &n) or return
 
 	case Type_Info_Struct:
 		switch info.soa_kind {
 		case .None: // Ignore
 		case .Fixed:
-			io.write_string(w, "#soa[",           &n) or_return
-			io.write_i64(w, i64(info.soa_len),    10) or_return
-			io.write_byte(w, ']',                 &n) or_return
-			write_type(w, info.soa_base_type,     &n) or_return
+			io.write_string(w, "#soa[",           &n) or return
+			io.write_i64(w, i64(info.soa_len),    10) or return
+			io.write_byte(w, ']',                 &n) or return
+			write_type(w, info.soa_base_type,     &n) or return
 			return
 		case .Slice:
-			io.write_string(w, "#soa[]",      &n) or_return
-			write_type(w, info.soa_base_type, &n) or_return
+			io.write_string(w, "#soa[]",      &n) or return
+			write_type(w, info.soa_base_type, &n) or return
 			return
 		case .Dynamic:
-			io.write_string(w, "#soa[dynamic]", &n) or_return
-			write_type(w, info.soa_base_type,   &n) or_return
+			io.write_string(w, "#soa[dynamic]", &n) or return
+			write_type(w, info.soa_base_type,   &n) or return
 			return
 		}
 
-		io.write_string(w, "struct ", &n) or_return
-		if info.is_packed    { io.write_string(w, "#packed ",    &n) or_return }
-		if info.is_raw_union { io.write_string(w, "#raw_union ", &n) or_return }
+		io.write_string(w, "struct ", &n) or return
+		if info.is_packed    { io.write_string(w, "#packed ",    &n) or return }
+		if info.is_raw_union { io.write_string(w, "#raw_union ", &n) or return }
 		if info.custom_align {
-			io.write_string(w, "#align(",      &n) or_return
-			io.write_i64(w, i64(ti.align), 10, &n) or_return
-			io.write_string(w, ") ",           &n) or_return
+			io.write_string(w, "#align(",      &n) or return
+			io.write_i64(w, i64(ti.align), 10, &n) or return
+			io.write_string(w, ") ",           &n) or return
 		}
-		io.write_byte(w, '{', &n) or_return
+		io.write_byte(w, '{', &n) or return
 		for name, i in info.names {
-			if i > 0 { io.write_string(w, ", ", &n) or_return }
-			io.write_string(w, name,     &n) or_return
-			io.write_string(w, ": ",     &n) or_return
-			write_type(w, info.types[i], &n) or_return
+			if i > 0 { io.write_string(w, ", ", &n) or return }
+			io.write_string(w, name,     &n) or return
+			io.write_string(w, ": ",     &n) or return
+			write_type(w, info.types[i], &n) or return
 		}
-		io.write_byte(w, '}', &n) or_return
+		io.write_byte(w, '}', &n) or return
 
 	case Type_Info_Union:
-		io.write_string(w, "union ", &n) or_return
-		if info.no_nil     { io.write_string(w, "#no_nil ", &n)     or_return }
-		if info.shared_nil { io.write_string(w, "#shared_nil ", &n) or_return }
+		io.write_string(w, "union ", &n) or return
+		if info.no_nil     { io.write_string(w, "#no_nil ", &n)     or return }
+		if info.shared_nil { io.write_string(w, "#shared_nil ", &n) or return }
 		if info.custom_align {
-			io.write_string(w, "#align(",      &n) or_return
-			io.write_i64(w, i64(ti.align), 10, &n) or_return
-			io.write_string(w, ") ",           &n) or_return
+			io.write_string(w, "#align(",      &n) or return
+			io.write_i64(w, i64(ti.align), 10, &n) or return
+			io.write_string(w, ") ",           &n) or return
 		}
-		io.write_byte(w, '{', &n) or_return
+		io.write_byte(w, '{', &n) or return
 		for variant, i in info.variants {
-			if i > 0 { io.write_string(w, ", ", &n) or_return }
-			write_type(w, variant, &n) or_return
+			if i > 0 { io.write_string(w, ", ", &n) or return }
+			write_type(w, variant, &n) or return
 		}
-		io.write_byte(w, '}', &n) or_return
+		io.write_byte(w, '}', &n) or return
 
 	case Type_Info_Enum:
-		io.write_string(w, "enum ", &n) or_return
-		write_type(w, info.base, &n) or_return
-		io.write_string(w, " {", &n) or_return
+		io.write_string(w, "enum ", &n) or return
+		write_type(w, info.base, &n) or return
+		io.write_string(w, " {", &n) or return
 		for name, i in info.names {
-			if i > 0 { io.write_string(w, ", ", &n) or_return }
-			io.write_string(w, name, &n) or_return
+			if i > 0 { io.write_string(w, ", ", &n) or return }
+			io.write_string(w, name, &n) or return
 		}
-		io.write_byte(w, '}', &n) or_return
+		io.write_byte(w, '}', &n) or return
 
 	case Type_Info_Bit_Set:
-		io.write_string(w, "bit_set[", &n) or_return
+		io.write_string(w, "bit_set[", &n) or return
 		switch {
 		case is_enum(info.elem):
-			write_type(w, info.elem, &n) or_return
+			write_type(w, info.elem, &n) or return
 		case is_rune(info.elem):
-			io.write_encoded_rune(w, rune(info.lower), true, &n) or_return
-			io.write_string(w, "..=",                        &n) or_return
-			io.write_encoded_rune(w, rune(info.upper), true, &n) or_return
+			io.write_encoded_rune(w, rune(info.lower), true, &n) or return
+			io.write_string(w, "..=",                        &n) or return
+			io.write_encoded_rune(w, rune(info.upper), true, &n) or return
 		case:
-			io.write_i64(w, info.lower, 10, &n) or_return
-			io.write_string(w, "..=",       &n) or_return
-			io.write_i64(w, info.upper, 10, &n) or_return
+			io.write_i64(w, info.lower, 10, &n) or return
+			io.write_string(w, "..=",       &n) or return
+			io.write_i64(w, info.upper, 10, &n) or return
 		}
 		if info.underlying != nil {
-			io.write_string(w, "; ",       &n) or_return
-			write_type(w, info.underlying, &n) or_return
+			io.write_string(w, "; ",       &n) or return
+			write_type(w, info.underlying, &n) or return
 		}
-		io.write_byte(w, ']', &n) or_return
+		io.write_byte(w, ']', &n) or return
 
 	case Type_Info_Simd_Vector:
-		io.write_string(w, "#simd[",         &n) or_return
-		io.write_i64(w, i64(info.count), 10, &n) or_return
-		io.write_byte(w, ']',                &n) or_return
-		write_type(w, info.elem,             &n) or_return
+		io.write_string(w, "#simd[",         &n) or return
+		io.write_i64(w, i64(info.count), 10, &n) or return
+		io.write_byte(w, ']',                &n) or return
+		write_type(w, info.elem,             &n) or return
 
 	case Type_Info_Relative_Pointer:
-		io.write_string(w, "#relative(", &n) or_return
-		write_type(w, info.base_integer, &n) or_return
-		io.write_string(w, ") ",         &n) or_return
-		write_type(w, info.pointer,      &n) or_return
+		io.write_string(w, "#relative(", &n) or return
+		write_type(w, info.base_integer, &n) or return
+		io.write_string(w, ") ",         &n) or return
+		write_type(w, info.pointer,      &n) or return
 
 	case Type_Info_Relative_Multi_Pointer:
-		io.write_string(w, "#relative(", &n) or_return
-		write_type(w, info.base_integer, &n) or_return
-		io.write_string(w, ") ",         &n) or_return
-		write_type(w, info.pointer,      &n) or_return
+		io.write_string(w, "#relative(", &n) or return
+		write_type(w, info.base_integer, &n) or return
+		io.write_string(w, ") ",         &n) or return
+		write_type(w, info.pointer,      &n) or return
 		
 	case Type_Info_Matrix:
-		io.write_string(w, "matrix[",               &n) or_return
-		io.write_i64(w, i64(info.row_count), 10,    &n) or_return
-		io.write_string(w, ", ",                    &n) or_return
-		io.write_i64(w, i64(info.column_count), 10, &n) or_return
-		io.write_string(w, "]",                     &n) or_return
-		write_type(w, info.elem,                    &n) or_return
+		io.write_string(w, "matrix[",               &n) or return
+		io.write_i64(w, i64(info.row_count), 10,    &n) or return
+		io.write_string(w, ", ",                    &n) or return
+		io.write_i64(w, i64(info.column_count), 10, &n) or return
+		io.write_string(w, "]",                     &n) or return
+		write_type(w, info.elem,                    &n) or return
 	}
 
 	return

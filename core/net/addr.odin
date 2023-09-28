@@ -36,7 +36,7 @@ import "core:fmt"
 	If `allow_non_decimal` is false, `aton` is told each component must be decimal and max 255.
 */
 parse_ip4_address :: proc(address_and_maybe_port: string, allow_non_decimal := false) -> (addr: IP4_Address, ok: bool) {
-	res := aton(address_and_maybe_port, .IP4, !allow_non_decimal) or_return
+	res := aton(address_and_maybe_port, .IP4, !allow_non_decimal) or return
 	return res.?
 }
 
@@ -65,7 +65,7 @@ aton :: proc(address_and_maybe_port: string, family: Address_Family, allow_decim
 			return {}, false
 		}
 
-		address, _ := split_port(address_and_maybe_port) or_return // This call doesn't allocate
+		address, _ := split_port(address_and_maybe_port) or return // This call doesn't allocate
 
 		buf: [4]u64 = {}
 		i := 0
@@ -149,7 +149,7 @@ IPv6_PIECE_COUNT       :: 8
 
 parse_ip6_address :: proc(address_and_maybe_port: string) -> (addr: IP6_Address, ok: bool) {
 	// If we have an IPv6 address of the form [IP]:Port, first get us just the IP.
-	address, _ := split_port(address_and_maybe_port) or_return
+	address, _ := split_port(address_and_maybe_port) or return
 
 	// Early bailouts based on length and number of pieces.
 	if len(address) < IPv6_MIN_STRING_LENGTH || len(address) > IPv6_MAX_STRING_LENGTH { return }
@@ -318,7 +318,7 @@ parse_ip6_address :: proc(address_and_maybe_port: string) -> (addr: IP6_Address,
 		if len(piece) > 4 { return }
 
 		if piece != "" {
-			val, _ := parse_ip_component(piece, 65535, {.IPv6}) or_return
+			val, _ := parse_ip_component(piece, 65535, {.IPv6}) or return
 			piece_values[val_idx] = u16be(val)
 		}
 
@@ -351,7 +351,7 @@ parse_ip6_address :: proc(address_and_maybe_port: string) -> (addr: IP6_Address,
 			if len(piece) > 4 { return }
 
 			if piece != "" {
-				val, _ := parse_ip_component(piece, 65535, {.IPv6}) or_return
+				val, _ := parse_ip_component(piece, 65535, {.IPv6}) or return
 				piece_values[val_idx] = u16be(val)
 			}
 

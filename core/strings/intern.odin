@@ -36,7 +36,7 @@ Returns:
 */
 intern_init :: proc(m: ^Intern, allocator := context.allocator, map_allocator := context.allocator, loc := #caller_location) -> (err: mem.Allocator_Error) {
 	m.allocator = allocator
-	m.entries = make(map[string]^Intern_Entry, 16, map_allocator, loc) or_return
+	m.entries = make(map[string]^Intern_Entry, 16, map_allocator, loc) or return
     return nil
 }
 /*
@@ -67,7 +67,7 @@ Returns:
 - err: An allocator error if one occured, `nil` otherwise
 */
 intern_get :: proc(m: ^Intern, text: string) -> (str: string, err: runtime.Allocator_Error) {
-	entry := _intern_get_entry(m, text) or_return
+	entry := _intern_get_entry(m, text) or return
 	#no_bounds_check return string(entry.str[:entry.len]), nil
 }
 /*
@@ -86,7 +86,7 @@ Returns:
 - err: An allocator error if one occured, `nil` otherwise
 */
 intern_get_cstring :: proc(m: ^Intern, text: string) -> (str: cstring, err: runtime.Allocator_Error) {
-	entry := _intern_get_entry(m, text) or_return
+	entry := _intern_get_entry(m, text) or return
 	return cstring(&entry.str[0]), nil
 }
 /*
@@ -112,7 +112,7 @@ _intern_get_entry :: proc(m: ^Intern, text: string) -> (new_entry: ^Intern_Entry
 	}
 
 	entry_size := int(offset_of(Intern_Entry, str)) + len(text) + 1
-	bytes := runtime.mem_alloc(entry_size, align_of(Intern_Entry), m.allocator) or_return
+	bytes := runtime.mem_alloc(entry_size, align_of(Intern_Entry), m.allocator) or return
 	new_entry = (^Intern_Entry)(raw_data(bytes))
 
 	new_entry.len = len(text)

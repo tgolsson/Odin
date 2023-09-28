@@ -206,7 +206,7 @@ set :: proc(ba: ^Bit_Array, #any_int index: uint, set_to: bool = true, allocator
 	leg_index := idx >> INDEX_SHIFT
 	bit_index := idx &  INDEX_MASK
 
-	resize_if_needed(ba, leg_index) or_return
+	resize_if_needed(ba, leg_index) or return
 
 	ba.max_index = max(idx, ba.max_index)
 

@@ -31,7 +31,7 @@ save_to_file :: proc(filename: string, img: ^Image, custom_info: Info = {}, allo
 	context.allocator = allocator
 
 	data: []byte; defer delete(data)
-	data = save_to_buffer(img, custom_info) or_return
+	data = save_to_buffer(img, custom_info) or return
 
 	if ok := os.write_entire_file(filename, data); !ok {
 		return .Unable_To_Write_File

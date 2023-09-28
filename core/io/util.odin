@@ -114,35 +114,35 @@ write_encoded_rune :: proc(w: Writer, r: rune, write_quote := true, n_written: ^
 		n_written^ += n
 	}
 	if write_quote {
-		write_byte(w, '\'', &n) or_return
+		write_byte(w, '\'', &n) or return
 	}
 	switch r {
-	case '\a': write_string(w, `\a`, &n) or_return
-	case '\b': write_string(w, `\b`, &n) or_return
-	case '\e': write_string(w, `\e`, &n) or_return
-	case '\f': write_string(w, `\f`, &n) or_return
-	case '\n': write_string(w, `\n`, &n) or_return
-	case '\r': write_string(w, `\r`, &n) or_return
-	case '\t': write_string(w, `\t`, &n) or_return
-	case '\v': write_string(w, `\v`, &n) or_return
+	case '\a': write_string(w, `\a`, &n) or return
+	case '\b': write_string(w, `\b`, &n) or return
+	case '\e': write_string(w, `\e`, &n) or return
+	case '\f': write_string(w, `\f`, &n) or return
+	case '\n': write_string(w, `\n`, &n) or return
+	case '\r': write_string(w, `\r`, &n) or return
+	case '\t': write_string(w, `\t`, &n) or return
+	case '\v': write_string(w, `\v`, &n) or return
 	case:
 		if r < 32 {
-			write_string(w, `\x`, &n) or_return
+			write_string(w, `\x`, &n) or return
 			
 			buf: [2]byte
 			s := strconv.append_bits(buf[:], u64(r), 16, true, 64, strconv.digits, nil)
 			switch len(s) {
-			case 0: write_string(w, "00", &n) or_return
-			case 1: write_byte(w, '0',    &n) or_return
-			case 2: write_string(w, s,    &n) or_return
+			case 0: write_string(w, "00", &n) or return
+			case 1: write_byte(w, '0',    &n) or return
+			case 2: write_string(w, s,    &n) or return
 			}
 		} else {
-			write_rune(w, r, &n) or_return
+			write_rune(w, r, &n) or return
 		}
 
 	}
 	if write_quote {
-		write_byte(w, '\'', &n) or_return
+		write_byte(w, '\'', &n) or return
 	}
 	return
 }
@@ -168,65 +168,65 @@ write_escaped_rune :: proc(w: Writer, r: rune, quote: byte, html_safe := false, 
 	if html_safe {
 		switch r {
 		case '<', '>', '&':
-			write_byte(w, '\\', &n) or_return
-			write_byte(w, 'u', &n)  or_return
+			write_byte(w, '\\', &n) or return
+			write_byte(w, 'u', &n)  or return
 			for s := 12; s >= 0; s -= 4 {
-				write_byte(w, DIGITS_LOWER[r>>uint(s) & 0xf], &n) or_return
+				write_byte(w, DIGITS_LOWER[r>>uint(s) & 0xf], &n) or return
 			}
 			return
 		}
 	}
 
 	if r == rune(quote) || r == '\\' {
-		write_byte(w, '\\', &n)    or_return
-		write_byte(w, byte(r), &n) or_return
+		write_byte(w, '\\', &n)    or return
+		write_byte(w, byte(r), &n) or return
 		return
 	} else if is_printable(r) {
-		write_encoded_rune(w, r, false, &n) or_return
+		write_encoded_rune(w, r, false, &n) or return
 		return
 	}
 	switch r {
-	case '\a': write_string(w, `\a`, &n) or_return
-	case '\b': write_string(w, `\b`, &n) or_return
-	case '\e': write_string(w, `\e`, &n) or_return
-	case '\f': write_string(w, `\f`, &n) or_return
-	case '\n': write_string(w, `\n`, &n) or_return
-	case '\r': write_string(w, `\r`, &n) or_return
-	case '\t': write_string(w, `\t`, &n) or_return
-	case '\v': write_string(w, `\v`, &n) or_return
+	case '\a': write_string(w, `\a`, &n) or return
+	case '\b': write_string(w, `\b`, &n) or return
+	case '\e': write_string(w, `\e`, &n) or return
+	case '\f': write_string(w, `\f`, &n) or return
+	case '\n': write_string(w, `\n`, &n) or return
+	case '\r': write_string(w, `\r`, &n) or return
+	case '\t': write_string(w, `\t`, &n) or return
+	case '\v': write_string(w, `\v`, &n) or return
 	case:
 		switch c := r; {
 		case c < ' ':
-			write_byte(w, '\\', &n)                      or_return
-			write_byte(w, 'x', &n)                       or_return
-			write_byte(w, DIGITS_LOWER[byte(c)>>4], &n)  or_return
-			write_byte(w, DIGITS_LOWER[byte(c)&0xf], &n) or_return
+			write_byte(w, '\\', &n)                      or return
+			write_byte(w, 'x', &n)                       or return
+			write_byte(w, DIGITS_LOWER[byte(c)>>4], &n)  or return
+			write_byte(w, DIGITS_LOWER[byte(c)&0xf], &n) or return
 
 		case c > utf8.MAX_RUNE:
 			c = 0xfffd
 			fallthrough
 		case c < 0x10000:
-			write_byte(w, '\\', &n) or_return
-			write_byte(w, 'u', &n)  or_return
+			write_byte(w, '\\', &n) or return
+			write_byte(w, 'u', &n)  or return
 			for s := 12; s >= 0; s -= 4 {
-				write_byte(w, DIGITS_LOWER[c>>uint(s) & 0xf], &n) or_return
+				write_byte(w, DIGITS_LOWER[c>>uint(s) & 0xf], &n) or return
 			}
 		case:
 			if for_json {
 				buf: [2]u16
 				utf16.encode(buf[:], []rune{c})
 				for bc in buf {
-					write_byte(w, '\\', &n) or_return
-					write_byte(w, 'u', &n)  or_return
+					write_byte(w, '\\', &n) or return
+					write_byte(w, 'u', &n)  or return
 					for s := 12; s >= 0; s -= 4 {
-						write_byte(w, DIGITS_LOWER[bc>>uint(s) & 0xf], &n) or_return
+						write_byte(w, DIGITS_LOWER[bc>>uint(s) & 0xf], &n) or return
 					}
 				}
 			} else {
-				write_byte(w, '\\', &n) or_return
-				write_byte(w, 'U', &n)  or_return
+				write_byte(w, '\\', &n) or return
+				write_byte(w, 'U', &n)  or return
 				for s := 24; s >= 0; s -= 4 {
-					write_byte(w, DIGITS_LOWER[c>>uint(s) & 0xf], &n) or_return
+					write_byte(w, DIGITS_LOWER[c>>uint(s) & 0xf], &n) or return
 				}
 			}
 		}
@@ -238,7 +238,7 @@ write_quoted_string :: proc(w: Writer, str: string, quote: byte = '"', n_written
 	defer if n_written != nil {
 		n_written^ += n
 	}
-	write_byte(w, quote, &n) or_return
+	write_byte(w, quote, &n) or return
 	for width, s := 0, str; len(s) > 0; s = s[width:] {
 		r := rune(s[0])
 		width = 1
@@ -246,17 +246,17 @@ write_quoted_string :: proc(w: Writer, str: string, quote: byte = '"', n_written
 			r, width = utf8.decode_rune_in_string(s)
 		}
 		if width == 1 && r == utf8.RUNE_ERROR {
-			write_byte(w, '\\', &n)                   or_return
-			write_byte(w, 'x', &n)                    or_return
-			write_byte(w, DIGITS_LOWER[s[0]>>4], &n)  or_return
-			write_byte(w, DIGITS_LOWER[s[0]&0xf], &n) or_return
+			write_byte(w, '\\', &n)                   or return
+			write_byte(w, 'x', &n)                    or return
+			write_byte(w, DIGITS_LOWER[s[0]>>4], &n)  or return
+			write_byte(w, DIGITS_LOWER[s[0]&0xf], &n) or return
 			continue
 		}
 
-		n_wrapper(write_escaped_rune(w, r, quote, false, nil, for_json), &n) or_return
+		n_wrapper(write_escaped_rune(w, r, quote, false, nil, for_json), &n) or return
 
 	}
-	write_byte(w, quote, &n) or_return
+	write_byte(w, quote, &n) or return
 	return
 }
 

@@ -320,13 +320,13 @@ scan_string :: proc(t: ^Tokenizer, offset: int, close: rune = '<', consume_close
 					/*
 						Might be the start of a CDATA tag.
 					*/
-					skip_cdata(t) or_return
+					skip_cdata(t) or return
 				} else if peek_byte(t, 1) == '-' && peek_byte(t, 2) == '-' {
 					/*
 						Comment start. Eat comment.
 					*/
 					t.read_offset += 3
-					_ = scan_comment(t) or_return
+					_ = scan_comment(t) or return
 				}
 			}
 

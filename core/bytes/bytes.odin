@@ -11,7 +11,7 @@ clone :: proc(s: []byte, allocator := context.allocator, loc := #caller_location
 }
 
 clone_safe :: proc(s: []byte, allocator := context.allocator, loc := #caller_location) -> (data: []byte, err: mem.Allocator_Error) {
-	c := make([]byte, len(s), allocator, loc) or_return
+	c := make([]byte, len(s), allocator, loc) or return
 	copy(c, s)
 	return c[:len(s)], nil
 }
@@ -151,7 +151,7 @@ join_safe :: proc(a: [][]byte, sep: []byte, allocator := context.allocator) -> (
 		n += len(s)
 	}
 
-	b := make([]byte, n, allocator) or_return
+	b := make([]byte, n, allocator) or return
 	i := copy(b, a[0])
 	for s in a[1:] {
 		i += copy(b[i:], sep)
@@ -186,7 +186,7 @@ concatenate_safe :: proc(a: [][]byte, allocator := context.allocator) -> (data: 
 	for s in a {
 		n += len(s)
 	}
-	b := make([]byte, n, allocator) or_return
+	b := make([]byte, n, allocator) or return
 	i := 0
 	for s in a {
 		i += copy(b[i:], s)

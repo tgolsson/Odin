@@ -92,7 +92,7 @@ Thread_Os_Specific :: struct {
 thread_create :: proc(procedure: Thread_Proc) -> ^Thread {
 	__windows_thread_entry_proc :: proc "stdcall" (t_: rawptr) -> win32.DWORD {
 		t := (^Thread)(t_)
-		context = t.init_context.? or_else runtime.default_context()
+		context = t.init_context.? or else runtime.default_context()
 
 		t.procedure(t)
 

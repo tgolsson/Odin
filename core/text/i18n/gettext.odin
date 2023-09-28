@@ -32,11 +32,11 @@ parse_mo_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTIONS, plur
 		Check magic. Should be 0x950412de in native Endianness.
 	*/
 	native := true
-	magic  := read_u32(data, native) or_return
+	magic  := read_u32(data, native) or return
 
 	if magic != 0x950412de {
 		native = false
-		magic = read_u32(data, native) or_return
+		magic = read_u32(data, native) or return
 
 		if magic != 0x950412de { return {}, .MO_File_Invalid_Signature }
 	}
@@ -44,12 +44,12 @@ parse_mo_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTIONS, plur
 	/*
 		We can ignore version_minor at offset 6.
 	*/
-	version_major := read_u16(data[4:]) or_return
+	version_major := read_u16(data[4:]) or return
 	if version_major > 1 { return {}, .MO_File_Unsupported_Version }
 
-	count             := read_u32(data[ 8:]) or_return
-	original_offset   := read_u32(data[12:]) or_return
-	translated_offset := read_u32(data[16:]) or_return
+	count             := read_u32(data[ 8:]) or return
+	original_offset   := read_u32(data[12:]) or return
+	translated_offset := read_u32(data[16:]) or return
 
 	if count == 0 { return {}, .Empty_Translation_Catalog }
 
@@ -71,14 +71,14 @@ parse_mo_from_bytes :: proc(data: []byte, options := DEFAULT_PARSE_OPTIONS, plur
 		offset := original_offset + 8 * n
 		if len(data) < int(offset + 8) { return translation, .MO_File_Invalid }
 
-		o_length := read_u32(data[offset    :], native) or_return
-		o_offset := read_u32(data[offset + 4:], native) or_return
+		o_length := read_u32(data[offset    :], native) or return
+		o_offset := read_u32(data[offset + 4:], native) or return
 
 		offset = translated_offset + 8 * n
 		if len(data) < int(offset + 8) { return translation, .MO_File_Invalid }
 
-		t_length := read_u32(data[offset    :], native) or_return
-		t_offset := read_u32(data[offset + 4:], native) or_return
+		t_length := read_u32(data[offset    :], native) or return
+		t_offset := read_u32(data[offset + 4:], native) or return
 
 		max_offset := int(max(o_offset + o_length + 1, t_offset + t_length + 1))
 		if len(data) < max_offset { return translation, .Premature_EOF }

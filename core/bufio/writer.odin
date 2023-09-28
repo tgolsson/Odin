@@ -175,7 +175,7 @@ writer_read_from :: proc(b: ^Writer, r: io.Reader) -> (n: i64, err: io.Error) {
 	}
 	for {
 		if writer_available(b) == 0 {
-			writer_flush(b) or_return
+			writer_flush(b) or return
 		}
 		if b.max_consecutive_empty_writes <= 0 {
 			b.max_consecutive_empty_writes = DEFAULT_MAX_CONSECUTIVE_EMPTY_READS

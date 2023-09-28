@@ -147,6 +147,7 @@ Token_Kind :: enum u32 {
 		Context,     // context
 		Or_Else,     // or_else
 		Or_Return,   // or_return
+		K_Or,        // or
 		Asm,         // asm
 		Inline,      // inline
 		No_Inline,   // no_inline
@@ -278,6 +279,7 @@ tokens := [Token_Kind.COUNT]string {
 	"context",
 	"or_else",
 	"or_return",
+	"or",
 	"asm",
 	"inline",
 	"no_inline",

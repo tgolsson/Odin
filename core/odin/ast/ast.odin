@@ -553,7 +553,7 @@ unparen_expr :: proc(expr: ^Expr) -> (val: ^Expr) {
 	return
 }
 
-strip_or_return_expr :: proc(expr: ^Expr) -> (val: ^Expr) {
+strip_or return_expr :: proc(expr: ^Expr) -> (val: ^Expr) {
 	val = expr
 	if expr == nil {
 		return

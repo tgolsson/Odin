@@ -193,9 +193,9 @@ size :: proc(s: Stream) -> (n: i64, err: Error) {
 		n, err = s.procedure(s.data, .Size, nil, 0, nil)
 		if err == .Empty {
 			n = 0
-			curr := seek(s, 0, .Current) or_return
-			end  := seek(s, 0, .End)     or_return
-			seek(s, curr, .Start)        or_return
+			curr := seek(s, 0, .Current) or return
+			end  := seek(s, 0, .End)     or return
+			seek(s, curr, .Start)        or return
 			n = end
 		}
 	} else {
@@ -219,7 +219,7 @@ read_at :: proc(r: Reader_At, p: []byte, offset: i64, n_read: ^int = nil) -> (n:
 		if err != .Empty {
 			n = int(n64)
 		} else {
-			curr := seek(r, offset, .Current) or_return
+			curr := seek(r, offset, .Current) or return
 			n, err = read(r, p)
 			_, err1 := seek(r, curr, .Start)
 			if err1 != nil && err == nil {
@@ -245,7 +245,7 @@ write_at :: proc(w: Writer_At, p: []byte, offset: i64, n_written: ^int = nil) ->
 		if err != .Empty {
 			n = int(n64)
 		} else {
-			curr := seek(w, offset, .Current) or_return
+			curr := seek(w, offset, .Current) or return
 			n, err = write(w, p)
 			_, err1 := seek(w, curr, .Start)
 			if err1 != nil && err == nil {
@@ -270,7 +270,7 @@ read_byte :: proc(r: Reader, n_read: ^int = nil) -> (b: byte, err: Error) {
 write_byte :: proc(w: Writer, c: byte, n_written: ^int = nil) -> Error {
 	buf: [1]byte
 	buf[0] = c
-	write(w, buf[:], n_written) or_return
+	write(w, buf[:], n_written) or return
 	return nil
 }
 

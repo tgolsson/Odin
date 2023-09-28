@@ -92,7 +92,7 @@ replace_environment_path :: proc(path: string, allocator := context.allocator) -
 	back an endpoint in both cases.
 */
 resolve :: proc(hostname_and_maybe_port: string) -> (ep4, ep6: Endpoint, err: Network_Error) {
-	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or_return
+	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or return
 	switch t in target {
 	case Endpoint:
 		// NOTE(tetra): The hostname was actually an IP address; nothing to resolve, so just return it.
@@ -118,7 +118,7 @@ resolve :: proc(hostname_and_maybe_port: string) -> (ep4, ep6: Endpoint, err: Ne
 }
 
 resolve_ip4 :: proc(hostname_and_maybe_port: string) -> (ep4: Endpoint, err: Network_Error) {
-	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or_return
+	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or return
 	switch t in target {
 	case Endpoint:
 		// NOTE(tetra): The hostname was actually an IP address; nothing to resolve, so just return it.
@@ -145,7 +145,7 @@ resolve_ip4 :: proc(hostname_and_maybe_port: string) -> (ep4: Endpoint, err: Net
 }
 
 resolve_ip6 :: proc(hostname_and_maybe_port: string) -> (ep6: Endpoint, err: Network_Error) {
-	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or_return
+	target := parse_hostname_or_endpoint(hostname_and_maybe_port) or return
 	switch t in target {
 	case Endpoint:
 		// NOTE(tetra): The hostname was actually an IP address; nothing to resolve, so just return it.
@@ -369,7 +369,7 @@ unpack_dns_header :: proc(id: u16be, bits: u16be) -> (hdr: DNS_Header) {
 load_resolv_conf :: proc(resolv_conf_path: string, allocator := context.allocator) -> (name_servers: []Endpoint, ok: bool) {
 	context.allocator = allocator
 
-	res := os.read_entire_file_from_filename(resolv_conf_path) or_return
+	res := os.read_entire_file_from_filename(resolv_conf_path) or return
 	defer delete(res)
 	resolv_str := string(res)
 
@@ -409,7 +409,7 @@ load_resolv_conf :: proc(resolv_conf_path: string, allocator := context.allocato
 load_hosts :: proc(hosts_file_path: string, allocator := context.allocator) -> (hosts: []DNS_Host_Entry, ok: bool) {
 	context.allocator = allocator
 
-	res := os.read_entire_file_from_filename(hosts_file_path, allocator) or_return
+	res := os.read_entire_file_from_filename(hosts_file_path, allocator) or return
 	defer delete(res)
 
 	_hosts := make([dynamic]DNS_Host_Entry, 0, allocator)
@@ -619,7 +619,7 @@ validate_hostname :: proc(hostname: string) -> (ok: bool) {
 parse_record :: proc(packet: []u8, cur_off: ^int, filter: DNS_Record_Type = nil) -> (record: DNS_Record, ok: bool) {
 	record_buf := packet[cur_off^:]
 
-	srv_record_name, hn_sz := decode_hostname(packet, cur_off^, context.temp_allocator) or_return
+	srv_record_name, hn_sz := decode_hostname(packet, cur_off^, context.temp_allocator) or return
 	// TODO(tetra): Not sure what we should call this.
 	// Is it really only used in SRVs?
 	// Maybe some refactoring is required?
@@ -674,7 +674,7 @@ parse_record :: proc(packet: []u8, cur_off: ^int, filter: DNS_Record_Type = nil)
 			}
 
 		case .CNAME:
-			hostname, _ := decode_hostname(packet, data_off) or_return
+			hostname, _ := decode_hostname(packet, data_off) or return
 
 			_record = DNS_Record_CNAME{
 				base = DNS_Record_Base{
@@ -694,7 +694,7 @@ parse_record :: proc(packet: []u8, cur_off: ^int, filter: DNS_Record_Type = nil)
 			}
 
 		case .NS:
-			name, _ := decode_hostname(packet, data_off) or_return
+			name, _ := decode_hostname(packet, data_off) or return
 
 			_record = DNS_Record_NS{
 				base = DNS_Record_Base{
@@ -712,7 +712,7 @@ parse_record :: proc(packet: []u8, cur_off: ^int, filter: DNS_Record_Type = nil)
 			_data := mem.slice_data_cast([]u16be, data)
 
 			priority, weight, port := _data[0], _data[1], _data[2]
-			target, _ := decode_hostname(packet, data_off + (size_of(u16be) * 3)) or_return
+			target, _ := decode_hostname(packet, data_off + (size_of(u16be) * 3)) or return
 
 			// NOTE(tetra): Srv record name should be of the form '_servicename._protocol.hostname'
 			// The record name is the name of the record.
@@ -747,7 +747,7 @@ parse_record :: proc(packet: []u8, cur_off: ^int, filter: DNS_Record_Type = nil)
 			}
 
 			preference: u16be = mem.slice_data_cast([]u16be, data)[0]
-			hostname, _ := decode_hostname(packet, data_off + size_of(u16be)) or_return
+			hostname, _ := decode_hostname(packet, data_off + size_of(u16be)) or return
 
 			_record = DNS_Record_MX{
 				base = DNS_Record_Base{
@@ -821,7 +821,7 @@ parse_response :: proc(response: []u8, filter: DNS_Record_Type = nil, allocator 
 		}
 
 		dq_sz :: 4
-		hn_sz := skip_hostname(response, cur_idx) or_return
+		hn_sz := skip_hostname(response, cur_idx) or return
 		dns_query := mem.slice_data_cast([]u16be, response[cur_idx+hn_sz:cur_idx+hn_sz+dq_sz])
 
 		cur_idx += hn_sz + dq_sz
@@ -832,7 +832,7 @@ parse_response :: proc(response: []u8, filter: DNS_Record_Type = nil, allocator 
 			continue
 		}
 
-		rec := parse_record(response, &cur_idx, filter) or_return
+		rec := parse_record(response, &cur_idx, filter) or return
 		if rec == nil {
 			continue
 		}
@@ -845,7 +845,7 @@ parse_response :: proc(response: []u8, filter: DNS_Record_Type = nil, allocator 
 			continue
 		}
 
-		rec := parse_record(response, &cur_idx, filter) or_return
+		rec := parse_record(response, &cur_idx, filter) or return
 		if rec == nil {
 			continue
 		}
@@ -858,7 +858,7 @@ parse_response :: proc(response: []u8, filter: DNS_Record_Type = nil, allocator 
 			continue
 		}
 
-		rec := parse_record(response, &cur_idx, filter) or_return
+		rec := parse_record(response, &cur_idx, filter) or return
 		if rec == nil {
 			continue
 		}

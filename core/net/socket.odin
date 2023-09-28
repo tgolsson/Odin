@@ -35,7 +35,7 @@ any_socket_to_socket :: proc(socket: Any_Socket) -> Socket {
     Calls `parse_hostname_or_endpoint` and `resolve`, then `dial_tcp_from_endpoint`.
 */
 dial_tcp_from_hostname_and_port_string :: proc(hostname_and_port: string, options := default_tcp_options) -> (socket: TCP_Socket, err: Network_Error) {
-	target := parse_hostname_or_endpoint(hostname_and_port) or_return
+	target := parse_hostname_or_endpoint(hostname_and_port) or return
 	switch t in target {
 	case Endpoint:
 		return dial_tcp_from_endpoint(t, options)
@@ -43,7 +43,7 @@ dial_tcp_from_hostname_and_port_string :: proc(hostname_and_port: string, option
 		if t.port == 0 {
 			return 0, .Port_Required
 		}
-		ep4, ep6 := resolve(t.hostname) or_return
+		ep4, ep6 := resolve(t.hostname) or return
 		ep := ep4 if ep4.address != nil else ep6 // NOTE(tetra): We don't know what family the server uses, so we just default to IP4.
 		ep.port = t.port
 		return dial_tcp_from_endpoint(ep, options)
@@ -58,7 +58,7 @@ dial_tcp_from_hostname_and_port_string :: proc(hostname_and_port: string, option
     If a `hostname` of form `a.host.name:9999` is given, the port will be ignored in favor of the explicit `port` param.
 */
 dial_tcp_from_hostname_with_port_override :: proc(hostname: string, port: int, options := default_tcp_options) -> (socket: TCP_Socket, err: Network_Error) {
-	target := parse_hostname_or_endpoint(hostname) or_return
+	target := parse_hostname_or_endpoint(hostname) or return
 	switch t in target {
 	case Endpoint:
 		return dial_tcp_from_endpoint({t.address, port}, options)
@@ -66,7 +66,7 @@ dial_tcp_from_hostname_with_port_override :: proc(hostname: string, port: int, o
 		if port == 0 {
 			return 0, .Port_Required
 		}
-		ep4, ep6 := resolve(t.hostname) or_return
+		ep4, ep6 := resolve(t.hostname) or return
 		ep := ep4 if ep4.address != nil else ep6 // NOTE(tetra): We don't know what family the server uses, so we just default to IP4.
 		ep.port = port
 		return dial_tcp_from_endpoint(ep, options)
@@ -105,7 +105,7 @@ bind :: proc(socket: Any_Socket, ep: Endpoint) -> (err: Network_Error) {
 	This is like a client TCP socket, except that it can send data to any remote endpoint without needing to establish a connection first.
 */
 make_unbound_udp_socket :: proc(family: Address_Family) -> (socket: UDP_Socket, err: Network_Error) {
-	sock := create_socket(family, .UDP) or_return
+	sock := create_socket(family, .UDP) or return
 	socket = sock.(UDP_Socket)
 	return
 }
@@ -121,8 +121,8 @@ make_bound_udp_socket :: proc(bound_address: Address, port: int) -> (socket: UDP
 	if bound_address == nil {
 		return {}, .Bad_Address
 	}
-	socket = make_unbound_udp_socket(family_from_address(bound_address)) or_return
-	bind(socket, {bound_address, port}) or_return
+	socket = make_unbound_udp_socket(family_from_address(bound_address)) or return
+	bind(socket, {bound_address, port}) or return
 	return
 }
 

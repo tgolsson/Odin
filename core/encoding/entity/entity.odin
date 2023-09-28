@@ -101,7 +101,7 @@ decode_xml :: proc(input: string, options := XML_Decode_Options{}, allocator := 
 	in_data := false
 
 	loop: for {
-		advance(&t) or_return
+		advance(&t) or return
 		if t.r < 0 { break loop }
 
 		/*
@@ -123,7 +123,7 @@ decode_xml :: proc(input: string, options := XML_Decode_Options{}, allocator := 
 				write_rune(&builder, '<')
 				continue
 			}
-			in_data = _handle_xml_special(&t, &builder, options) or_return
+			in_data = _handle_xml_special(&t, &builder, options) or return
 
 		case ']':
 			/*
@@ -319,7 +319,7 @@ _handle_xml_special :: proc(t: ^Tokenizer, builder: ^strings.Builder, options: X
 			Scan until end of CDATA.
 		*/
 		for {
-			advance(t) or_return
+			advance(t) or return
 			if t.r < 0 { return true, .CDATA_Not_Terminated }
 
 			if t.read_offset + len(CDATA_END) < len(t.src) {
@@ -350,7 +350,7 @@ _handle_xml_special :: proc(t: ^Tokenizer, builder: ^strings.Builder, options: X
 			Scan until end of Comment.
 		*/
 		for {
-			advance(t) or_return
+			advance(t) or return
 			if t.r < 0 { return true, .Comment_Not_Terminated }
 
 			if t.read_offset + len(COMMENT_END) < len(t.src) {

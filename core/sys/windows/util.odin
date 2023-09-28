@@ -76,7 +76,7 @@ wstring_to_utf8 :: proc(s: wstring, N: int, allocator := context.temp_allocator)
 	// also be null terminated.
 	// If N > 0 it assumes the wide string is not null terminated and the resulting string
 	// will not be null terminated.
-	text := make([]byte, n) or_return
+	text := make([]byte, n) or return
 
 	n1 := WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, s, i32(N), raw_data(text), n, nil, nil)
 	if n1 == 0 {
@@ -233,7 +233,7 @@ get_computer_name_and_account_sid :: proc(username: string) -> (computer_name: s
 	if !res {
 		return "", {}, false
 	}
-	computer_name = utf16_to_utf8(cname_w, context.temp_allocator) or_else ""
+	computer_name = utf16_to_utf8(cname_w, context.temp_allocator) or else ""
 
 	ok = true
 	return
@@ -335,7 +335,7 @@ add_user_profile :: proc(username: string) -> (ok: bool, profile_path: string) {
 	if res2 != 0 {
 		return false, ""
 	}
-	profile_path = wstring_to_utf8(&pszProfilePath[0], 257) or_else ""
+	profile_path = wstring_to_utf8(&pszProfilePath[0], 257) or else ""
 
 	return true, profile_path
 }

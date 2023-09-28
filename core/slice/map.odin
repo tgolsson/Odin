@@ -7,7 +7,7 @@ _ :: intrinsics
 _ :: runtime
 
 map_keys :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (keys: []K, err: runtime.Allocator_Error) {
-	keys = make(type_of(keys), len(m), allocator) or_return
+	keys = make(type_of(keys), len(m), allocator) or return
 	i := 0
 	for key in m {
 		keys[i] = key
@@ -16,7 +16,7 @@ map_keys :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (keys: []K,
 	return
 }
 map_values :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (values: []V, err: runtime.Allocator_Error) {
-	values = make(type_of(values), len(m), allocator) or_return
+	values = make(type_of(values), len(m), allocator) or return
 	i := 0
 	for _, value in m {
 		values[i] = value
@@ -38,7 +38,7 @@ Map_Entry_Info :: struct($Key, $Value: typeid) {
 
 
 map_entries :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (entries: []Map_Entry(K, V), err: runtime.Allocator_Error) {
-	entries = make(type_of(entries), len(m), allocator) or_return
+	entries = make(type_of(entries), len(m), allocator) or return
 	i := 0
 	for key, value in m {
 		entries[i].key   = key
@@ -54,7 +54,7 @@ map_entry_infos :: proc(m: $M/map[$K]$V, allocator := context.allocator) -> (ent
 
 	info := type_info_base(type_info_of(M)).variant.(Type_Info_Map)
 	if info.map_info != nil {
-		entries = make(type_of(entries), len(m), allocator) or_return
+		entries = make(type_of(entries), len(m), allocator) or return
 
 		map_cap := uintptr(cap(m))
 		ks, vs, hs, _, _ := runtime.map_kvh_data_dynamic(rm^, info.map_info)

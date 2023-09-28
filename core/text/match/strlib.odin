@@ -154,7 +154,7 @@ capture_to_close :: proc(ms: ^Match_State) -> (int, Error) {
 
 class_end :: proc(ms: ^Match_State, p: int) -> (step: int, err: Error) {
 	step = p
-	ch := utf8_advance(ms.pattern, &step) or_return
+	ch := utf8_advance(ms.pattern, &step) or return
 
 	switch ch {
 	case L_ESC: 
@@ -163,7 +163,7 @@ class_end :: proc(ms: ^Match_State, p: int) -> (step: int, err: Error) {
 			return
 		}
 
-		utf8_advance(ms.pattern, &step) or_return
+		utf8_advance(ms.pattern, &step) or return
 
 	case '[': 
 		// fine with step by 1
@@ -209,23 +209,23 @@ match_bracket_class :: proc(ms: ^Match_State, c: rune, p, ec: int) -> (sig: bool
 
 	// while inside of class range
 	for p < ec {
-		char := utf8_advance(ms.pattern, &p) or_return
+		char := utf8_advance(ms.pattern, &p) or return
 
 		// e.g. %a
 		if char == L_ESC { 
-			next := utf8_advance(ms.pattern, &p) or_return
+			next := utf8_advance(ms.pattern, &p) or return
 
 			if match_class(c, next) {
 				return
 			}
 		} else {
-			next, next_size := utf8_peek(ms.pattern[p:]) or_return
+			next, next_size := utf8_peek(ms.pattern[p:]) or return
 
 			// TODO test case for [a-???] where ??? is missing
 			if next == '-' && p + next_size < len(ms.pattern) {
 				// advance 2 codepoints
 				p += next_size
-				last := utf8_advance(ms.pattern, &p) or_return
+				last := utf8_advance(ms.pattern, &p) or return
 
 				if char <= c && c <= last {
 					return
@@ -245,16 +245,16 @@ single_match :: proc(ms: ^Match_State, s, p, ep: int) -> (matched: bool, schar_s
 		return
 	}
 
-	pchar, psize := utf8_peek(ms.pattern[p:]) or_return
-	schar, ssize := utf8_peek(ms.src[s:]) or_return
+	pchar, psize := utf8_peek(ms.pattern[p:]) or return
+	schar, ssize := utf8_peek(ms.src[s:]) or return
 	schar_size = ssize
 
 	switch pchar {
 	case '.': matched = true
 	case L_ESC: 
-		pchar_next, _ := utf8_peek(ms.pattern[p + psize:]) or_return
+		pchar_next, _ := utf8_peek(ms.pattern[p + psize:]) or return
 		matched = match_class(schar, pchar_next)
-	case '[': matched = match_bracket_class(ms, schar, p, ep - 1) or_return
+	case '[': matched = match_bracket_class(ms, schar, p, ep - 1) or return
 	case: matched = schar == pchar
 	}
 
@@ -267,8 +267,8 @@ match_balance :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) 
 	}
 
 
-	schar, ssize := utf8_peek(ms.src[s:]) or_return
-	pchar, psize := utf8_peek(ms.pattern[p:]) or_return
+	schar, ssize := utf8_peek(ms.src[s:]) or return
+	pchar, psize := utf8_peek(ms.pattern[p:]) or return
 
 	// skip until the src and pattern match
 	if schar != pchar {
@@ -279,10 +279,10 @@ match_balance :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) 
 	s := s
 	s += ssize
 	begin := pchar
-	end, _ := utf8_peek(ms.pattern[p + psize:]) or_return
+	end, _ := utf8_peek(ms.pattern[p + psize:]) or return
 
 	for s < len(ms.src) {
-		ch := utf8_advance(ms.src, &s) or_return
+		ch := utf8_advance(ms.src, &s) or return
 
 		switch ch{
 		case end:
@@ -305,7 +305,7 @@ max_expand :: proc(ms: ^Match_State, s, p, ep: int) -> (res: int, err: Error) {
 
 	// count up matches
 	for {
-		matched, size := single_match(ms, m, p, ep) or_return
+		matched, size := single_match(ms, m, p, ep) or return
 		
 		if !matched {
 			break
@@ -315,7 +315,7 @@ max_expand :: proc(ms: ^Match_State, s, p, ep: int) -> (res: int, err: Error) {
 	}
 
 	for s <= m {
-		result := match(ms, m, ep + 1) or_return
+		result := match(ms, m, ep + 1) or return
 
 		if result != INVALID {
 			return result, .OK
@@ -335,13 +335,13 @@ min_expand :: proc(ms: ^Match_State, s, p, ep: int) -> (res: int, err: Error) {
 	s := s
 
 	for {
-		result := match(ms, s, ep + 1) or_return
+		result := match(ms, s, ep + 1) or return
 
 		if result != INVALID {
 			return result, .OK
 		} else {
 			// TODO receive next step maybe?
-			matched, rune_size := single_match(ms, s, p, ep) or_return
+			matched, rune_size := single_match(ms, s, p, ep) or return
 
 			if matched {
 				s += rune_size
@@ -359,7 +359,7 @@ start_capture :: proc(ms: ^Match_State, s, p, what: int) -> (res: int, err: Erro
 	ms.capture[level].len = what
 	ms.level += 1
 
-	res = match(ms, s, p) or_return
+	res = match(ms, s, p) or return
 	if res == INVALID {
 		ms.level -= 1
 	}
@@ -367,12 +367,12 @@ start_capture :: proc(ms: ^Match_State, s, p, what: int) -> (res: int, err: Erro
 }
 
 end_capture :: proc(ms: ^Match_State, s, p: int) -> (res: int, err: Error) {
-	l := capture_to_close(ms) or_return
+	l := capture_to_close(ms) or return
 	
 	// TODO double check, could do string as int index
 	ms.capture[l].len = s - ms.capture[l].init
 
-	res = match(ms, s, p) or_return
+	res = match(ms, s, p) or return
 	if res == INVALID {
 		ms.capture[l].len = CAP_UNFINISHED
 	}
@@ -380,7 +380,7 @@ end_capture :: proc(ms: ^Match_State, s, p: int) -> (res: int, err: Error) {
 }
 
 match_capture :: proc(ms: ^Match_State, s: int, char: rune) -> (res: int, err: Error) {
-	index := check_capture(ms, char) or_return
+	index := check_capture(ms, char) or return
 	length := ms.capture[index].len
 
 	if len(ms.src) - s >= length {
@@ -399,17 +399,17 @@ match :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 	}
 
 	// NOTE we can walk by ascii steps if we know the characters are ascii
-	char, _ := utf8_peek(ms.pattern[p:]) or_return
+	char, _ := utf8_peek(ms.pattern[p:]) or return
 	switch char {
 	case '(': 
 		if p + 1 < len(ms.pattern) && ms.pattern[p + 1] == ')' {
-			s = start_capture(ms, s, p + 2, CAP_POSITION) or_return
+			s = start_capture(ms, s, p + 2, CAP_POSITION) or return
 		} else {
-			s = start_capture(ms, s, p + 1, CAP_UNFINISHED) or_return
+			s = start_capture(ms, s, p + 1, CAP_UNFINISHED) or return
 		}
 
 	case ')': 
-		s = end_capture(ms, s, p + 1) or_return
+		s = end_capture(ms, s, p + 1) or return
 
 	case '$': 
 		if p + 1 != len(ms.pattern) {
@@ -430,7 +430,7 @@ match :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 		switch ms.pattern[p + 1] {
 		// balanced string
 		case 'b': 
-			s = match_balance(ms, s, p + 2) or_return
+			s = match_balance(ms, s, p + 2) or return
 
 			if s != INVALID {
 				// eg after %b()
@@ -445,22 +445,22 @@ match :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 				return INVALID, .Invalid_Pattern_Capture
 			}
 
-			ep := class_end(ms, p) or_return
+			ep := class_end(ms, p) or return
 			previous, current: rune
 
 			// get previous
 			if s != 0 {
 				temp := utf8_prev(ms.src, 0, s)
-				previous, _ = utf8_peek(ms.src[temp:]) or_return
+				previous, _ = utf8_peek(ms.src[temp:]) or return
 			}
 
 			// get current
 			if s != len(ms.src) {
-				current, _ = utf8_peek(ms.src[s:]) or_return
+				current, _ = utf8_peek(ms.src[s:]) or return
 			}
 
-			m1 := match_bracket_class(ms, previous, p, ep - 1) or_return
-			m2 := match_bracket_class(ms, current, p, ep - 1) or_return
+			m1 := match_bracket_class(ms, previous, p, ep - 1) or return
+			m2 := match_bracket_class(ms, current, p, ep - 1) or return
 
 			if !m1 && m2 {
 				return match(ms, s, ep)
@@ -470,7 +470,7 @@ match :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 
 		// capture group
 		case '0'..<'9':
-			s = match_capture(ms, s, rune(ms.pattern[p + 1])) or_return
+			s = match_capture(ms, s, rune(ms.pattern[p + 1])) or return
 
 			if s != INVALID {
 				return match(ms, s, p + 2)
@@ -488,8 +488,8 @@ match :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 
 match_default :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) {
 	s := s
-	ep := class_end(ms, p) or_return
-	single_matched, ssize := single_match(ms, s, p, ep) or_return
+	ep := class_end(ms, p) or return
+	single_matched, ssize := single_match(ms, s, p, ep) or return
 
 	if !single_matched {
 		epc := ep < len(ms.pattern) ? ms.pattern[ep] : 0
@@ -503,7 +503,7 @@ match_default :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) 
 
 		switch epc {
 		case '?':
-			result := match(ms, s + ssize, ep + 1) or_return
+			result := match(ms, s + ssize, ep + 1) or return
 			
 			if result != INVALID {
 				s = result
@@ -511,9 +511,9 @@ match_default :: proc(ms: ^Match_State, s, p: int) -> (unused: int, err: Error) 
 				return match(ms, s, ep + 1)
 			}
 
-		case '+': s = max_expand(ms, s + ssize, p, ep) or_return
-		case '*': s = max_expand(ms, s, p, ep) or_return
-		case '-': s = min_expand(ms, s, p, ep) or_return
+		case '+': s = max_expand(ms, s + ssize, p, ep) or return
+		case '*': s = max_expand(ms, s, p, ep) or return
+		case '-': s = min_expand(ms, s, p, ep) or return
 		case: return match(ms, s + ssize, ep)
 		}
 	}
@@ -551,7 +551,7 @@ push_captures :: proc(
 	nlevels = 1 if ms.level == 0 && s != -1 else ms.level
 
 	for i in 0..<nlevels {
-		push_onecapture(ms, i, s, e, matches) or_return
+		push_onecapture(ms, i, s, e, matches) or return
 	}
 
 	return
@@ -652,7 +652,7 @@ find_aux :: proc(
 	}
 
 	for {
-		res := match(&ms, s, p) or_return
+		res := match(&ms, s, p) or return
 
 		if res != INVALID {
 			// disallow non advancing match
@@ -664,7 +664,7 @@ find_aux :: proc(
 			matches[0] = { s, res }
 
 			// rest are the actual captures
-			captures = push_captures(&ms, -1, -1, matches[1:]) or_return
+			captures = push_captures(&ms, -1, -1, matches[1:]) or return
 			captures += 1
 
 			return

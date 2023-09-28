@@ -121,7 +121,7 @@ _open_internal :: proc(name: string, flags: File_Flags, perm: File_Mode) -> (han
 
 _open :: proc(name: string, flags: File_Flags, perm: File_Mode) -> (f: ^File, err: Error) {
 	flags := flags if flags != nil else {.Read}
-	handle := _open_internal(name, flags + {.Close_On_Exec}, perm) or_return
+	handle := _open_internal(name, flags + {.Close_On_Exec}, perm) or return
 	return _new_file(handle, name), nil
 }
 
@@ -304,7 +304,7 @@ _read_at :: proc(f: ^File, p: []byte, offset: i64) -> (n: i64, err: Error) {
 			buf = buf[:MAX_RW]
 
 		}
-		curr_offset := seek(f, offset, .Current) or_return
+		curr_offset := seek(f, offset, .Current) or return
 		defer seek(f, curr_offset, .Start)
 
 		o := win32.OVERLAPPED{
@@ -328,7 +328,7 @@ _read_at :: proc(f: ^File, p: []byte, offset: i64) -> (n: i64, err: Error) {
 
 	p, offset := p, offset
 	for len(p) > 0 {
-		m := pread(f, p, offset) or_return
+		m := pread(f, p, offset) or return
 		n += m
 		p = p[m:]
 		offset += i64(m)
@@ -370,7 +370,7 @@ _write_at :: proc(f: ^File, p: []byte, offset: i64) -> (n: i64, err: Error) {
 			buf = buf[:MAX_RW]
 
 		}
-		curr_offset := seek(f, offset, .Current) or_return
+		curr_offset := seek(f, offset, .Current) or return
 		defer seek(f, curr_offset, .Start)
 
 		o := win32.OVERLAPPED{
@@ -391,7 +391,7 @@ _write_at :: proc(f: ^File, p: []byte, offset: i64) -> (n: i64, err: Error) {
 	sync.guard(&f.impl.p_mutex)
 	p, offset := p, offset
 	for len(p) > 0 {
-		m := pwrite(f, p, offset) or_return
+		m := pwrite(f, p, offset) or return
 		n += m
 		p = p[m:]
 		offset += i64(m)
@@ -426,9 +426,9 @@ _truncate :: proc(f: ^File, size: i64) -> Error {
 	if f == nil {
 		return nil
 	}
-	curr_off := seek(f, 0, .Current) or_return
+	curr_off := seek(f, 0, .Current) or return
 	defer seek(f, curr_off, .Start)
-	seek(f, size, .Start) or_return
+	seek(f, size, .Start) or return
 	handle := _handle(f)
 	if !win32.SetEndOfFile(handle) {
 		return _get_platform_error()
@@ -539,7 +539,7 @@ _normalize_link_path :: proc(p: []u16, allocator: runtime.Allocator) -> (str: st
 	}
 
 
-	handle := _open_sym_link(raw_data(p)) or_return
+	handle := _open_sym_link(raw_data(p)) or return
 	defer win32.CloseHandle(handle)
 
 	n := win32.GetFinalPathNameByHandleW(handle, nil, 0, win32.VOLUME_NAME_DOS)
@@ -571,7 +571,7 @@ _read_link :: proc(name: string, allocator: runtime.Allocator) -> (s: string, er
 	rdb_buf: [MAXIMUM_REPARSE_DATA_BUFFER_SIZE]byte
 
 	p := _fix_long_path(name)
-	handle := _open_sym_link(p) or_return
+	handle := _open_sym_link(p) or return
 	defer win32.CloseHandle(handle)
 
 	bytes_returned: u32
@@ -652,7 +652,7 @@ _chdir :: proc(name: string) -> Error {
 }
 
 _chmod :: proc(name: string, mode: File_Mode) -> Error {
-	f := open(name, {.Write}) or_return
+	f := open(name, {.Write}) or return
 	defer close(f)
 	return _fchmod(f, mode)
 }
@@ -667,7 +667,7 @@ _lchown :: proc(name: string, uid, gid: int) -> Error {
 
 
 _chtimes :: proc(name: string, atime, mtime: time.Time) -> Error {
-	f := open(name, {.Write}) or_return
+	f := open(name, {.Write}) or return
 	defer close(f)
 	return _fchtimes(f, atime, mtime)
 }

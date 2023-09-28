@@ -97,7 +97,7 @@ _mkdir_all :: proc(path: string, perm: File_Mode) -> Error {
 	}
 	
 	has_created: bool
-	_mkdirat(dfd, path_bytes, int(perm & 0o777), &has_created) or_return
+	_mkdirat(dfd, path_bytes, int(perm & 0o777), &has_created) or return
 	if has_created {
 		return nil
 	}
@@ -162,7 +162,7 @@ _remove_all :: proc(path: string) -> Error {
 						return _get_platform_error(new_dfd)
 					}
 					defer unix.sys_close(new_dfd)
-					_remove_all_dir(new_dfd) or_return
+					_remove_all_dir(new_dfd) or return
 					unlink_res = unix.sys_unlinkat(dfd, d_name_cstr, int(unix.AT_REMOVEDIR))
 				case:
 					unlink_res = unix.sys_unlinkat(dfd, d_name_cstr) 
@@ -187,7 +187,7 @@ _remove_all :: proc(path: string) -> Error {
 	}
 
 	defer unix.sys_close(fd)
-	_remove_all_dir(fd) or_return
+	_remove_all_dir(fd) or return
 	return _ok_or_error(unix.sys_rmdir(path_cstr))
 }
 

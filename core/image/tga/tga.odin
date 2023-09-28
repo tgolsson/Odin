@@ -109,7 +109,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 	}
 
 	// First check for a footer.
-	filesize := compress.input_size(ctx) or_return
+	filesize := compress.input_size(ctx) or return
 
 	footer: image.TGA_Footer
 	have_valid_footer := false
@@ -135,7 +135,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 		}
 	}
 
-	header := image.read_data(ctx, image.TGA_Header) or_return
+	header := image.read_data(ctx, image.TGA_Header) or return
 
 	// Header checks
 	rle_encoding  := false

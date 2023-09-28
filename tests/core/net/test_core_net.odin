@@ -378,7 +378,7 @@ tcp_tests :: proc(t: ^testing.T) {
 
 tcp_client :: proc(retval: rawptr) {
 	send :: proc(content: []u8) -> (err: net.Network_Error) {
-		skt := net.dial_tcp(ENDPOINT) or_return
+		skt := net.dial_tcp(ENDPOINT) or return
 		defer net.close(skt)
 
 		net.set_option(skt, .Send_Timeout,    SEND_TIMEOUT)

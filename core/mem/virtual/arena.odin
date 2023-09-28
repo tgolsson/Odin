@@ -41,7 +41,7 @@ DEFAULT_ARENA_STATIC_RESERVE_SIZE :: mem.Gigabyte when size_of(uintptr) == 8 els
 @(require_results)
 arena_init_growing :: proc(arena: ^Arena, reserved: uint = DEFAULT_ARENA_GROWING_MINIMUM_BLOCK_SIZE) -> (err: Allocator_Error) {
 	arena.kind           = .Growing
-	arena.curr_block     = memory_block_alloc(0, reserved, {}) or_return
+	arena.curr_block     = memory_block_alloc(0, reserved, {}) or return
 	arena.total_used     = 0
 	arena.total_reserved = arena.curr_block.reserved
 	return
@@ -53,7 +53,7 @@ arena_init_growing :: proc(arena: ^Arena, reserved: uint = DEFAULT_ARENA_GROWING
 @(require_results)
 arena_init_static :: proc(arena: ^Arena, reserved: uint, commit_size: uint = DEFAULT_ARENA_STATIC_COMMIT_SIZE) -> (err: Allocator_Error) {
 	arena.kind           = .Static
-	arena.curr_block     = memory_block_alloc(commit_size, reserved, {}) or_return
+	arena.curr_block     = memory_block_alloc(commit_size, reserved, {}) or return
 	arena.total_used     = 0
 	arena.total_reserved = arena.curr_block.reserved
 	return
@@ -98,7 +98,7 @@ arena_alloc :: proc(arena: ^Arena, size: uint, alignment: uint, loc := #caller_l
 
 	switch arena.kind {
 	case .Growing:
-		if arena.curr_block == nil || (safe_add(arena.curr_block.used, size) or_else 0) > arena.curr_block.reserved {
+		if arena.curr_block == nil || (safe_add(arena.curr_block.used, size) or else 0) > arena.curr_block.reserved {
 			size = mem.align_forward_uint(size, alignment)
 			if arena.minimum_block_size == 0 {
 				arena.minimum_block_size = DEFAULT_ARENA_GROWING_MINIMUM_BLOCK_SIZE
@@ -106,7 +106,7 @@ arena_alloc :: proc(arena: ^Arena, size: uint, alignment: uint, loc := #caller_l
 
 			block_size := max(size, arena.minimum_block_size)
 
-			new_block := memory_block_alloc(size, block_size, {}) or_return
+			new_block := memory_block_alloc(size, block_size, {}) or return
 			new_block.prev = arena.curr_block
 			arena.curr_block = new_block
 			arena.total_reserved += new_block.reserved
@@ -120,7 +120,7 @@ arena_alloc :: proc(arena: ^Arena, size: uint, alignment: uint, loc := #caller_l
 			if arena.minimum_block_size == 0 {
 				arena.minimum_block_size = DEFAULT_ARENA_STATIC_RESERVE_SIZE
 			}
-			arena_init_static(arena, reserved=arena.minimum_block_size, commit_size=DEFAULT_ARENA_STATIC_COMMIT_SIZE) or_return
+			arena_init_static(arena, reserved=arena.minimum_block_size, commit_size=DEFAULT_ARENA_STATIC_COMMIT_SIZE) or return
 		}
 		fallthrough
 	case .Buffer:
@@ -227,7 +227,7 @@ arena_growing_bootstrap_new_by_offset :: proc($T: typeid, offset_to_arena: uintp
 	bootstrap.kind = .Growing
 	bootstrap.minimum_block_size = minimum_block_size
 
-	data := arena_alloc(&bootstrap, size_of(T), align_of(T)) or_return
+	data := arena_alloc(&bootstrap, size_of(T), align_of(T)) or return
 
 	ptr = (^T)(raw_data(data))
 
@@ -249,7 +249,7 @@ arena_static_bootstrap_new_by_offset :: proc($T: typeid, offset_to_arena: uintpt
 	bootstrap.kind = .Static
 	bootstrap.minimum_block_size = reserved
 
-	data := arena_alloc(&bootstrap, size_of(T), align_of(T)) or_return
+	data := arena_alloc(&bootstrap, size_of(T), align_of(T)) or return
 
 	ptr = (^T)(raw_data(data))
 
@@ -307,7 +307,7 @@ arena_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode,
 			return
 		}
 
-		new_memory := arena_alloc(arena, size, alignment, location) or_return
+		new_memory := arena_alloc(arena, size, alignment, location) or return
 		if new_memory == nil {
 			return
 		}

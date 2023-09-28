@@ -73,7 +73,7 @@ temp_full_path :: proc(name: string) -> (path: string, err: os.Errno) {
 		return "", os.Errno(win32.GetLastError())
 	}
 
-	return win32.utf16_to_utf8(buf[:n], ta) or_else "", os.ERROR_NONE
+	return win32.utf16_to_utf8(buf[:n], ta) or else "", os.ERROR_NONE
 }
 
 

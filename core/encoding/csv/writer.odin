@@ -64,15 +64,15 @@ write :: proc(w: ^Writer, record: []string) -> io.Error {
 		field := record[field_idx]
 
 		if field_idx > 0 {
-			io.write_rune(w.w, w.comma) or_return
+			io.write_rune(w.w, w.comma) or return
 		}
 
 		if !field_needs_quoting(w, field) {
-			io.write_string(w.w, field) or_return
+			io.write_string(w.w, field) or return
 			continue
 		}
 
-		io.write_byte(w.w, '"') or_return
+		io.write_byte(w.w, '"') or return
 
 		for len(field) > 0 {
 			i := strings.index_any(field, CHAR_SET)
@@ -80,28 +80,28 @@ write :: proc(w: ^Writer, record: []string) -> io.Error {
 				i = len(field)
 			}
 
-			io.write_string(w.w, field[:i]) or_return
+			io.write_string(w.w, field[:i]) or return
 			field = field[i:]
 
 			if len(field) > 0 {
 				switch field[0] {
 				case '\r':
 					if !w.use_crlf {
-						io.write_byte(w.w, '\r') or_return
+						io.write_byte(w.w, '\r') or return
 					}
 				case '\n':
 					if w.use_crlf {
-						io.write_string(w.w, "\r\n") or_return
+						io.write_string(w.w, "\r\n") or return
 					} else {
-						io.write_byte(w.w, '\n') or_return
+						io.write_byte(w.w, '\n') or return
 					}
 				case '"':
-					io.write_string(w.w, `""`) or_return
+					io.write_string(w.w, `""`) or return
 				}
 				field = field[1:]
 			}
 		}
-		io.write_byte(w.w, '"') or_return
+		io.write_byte(w.w, '"') or return
 	}
 
 	if w.use_crlf {
@@ -114,7 +114,7 @@ write :: proc(w: ^Writer, record: []string) -> io.Error {
 // write_all writes multiple CSV records to w using write, and then flushes (if necessary).
 write_all :: proc(w: ^Writer, records: [][]string) -> io.Error {
 	for record in records {
-		write(w, record) or_return
+		write(w, record) or return
 	}
 	return writer_flush(w)
 }

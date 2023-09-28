@@ -33,7 +33,7 @@ Error :: union #shared_nil {
 
 
 is_platform_error :: proc(ferr: Error) -> (err: i32, ok: bool) {
-	v := ferr.(Platform_Error) or_else {}
+	v := ferr.(Platform_Error) or else {}
 	return i32(v), i32(v) != 0
 }
 

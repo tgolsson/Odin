@@ -115,13 +115,13 @@ set_text :: proc(s: ^State, text: string) {
 
 undo_state_push :: proc(s: ^State, undo: ^[dynamic]^Undo_State) -> mem.Allocator_Error {
 	text := string(s.builder.buf[:])
-	item := (^Undo_State)(mem.alloc(size_of(Undo_State) + len(text), align_of(Undo_State), s.undo_text_allocator) or_return)
+	item := (^Undo_State)(mem.alloc(size_of(Undo_State) + len(text), align_of(Undo_State), s.undo_text_allocator) or return)
 	item.selection = s.selection
 	item.len = len(text)
 	#no_bounds_check {
 		runtime.copy(item.text[:len(text)], text)
 	}
-	append(undo, item) or_return
+	append(undo, item) or return
 	return nil
 }
 
@@ -331,7 +331,7 @@ copy :: proc(s: ^State) -> bool {
 
 paste :: proc(s: ^State) -> bool {
 	if s.get_clipboard != nil {
-		input_text(s, s.get_clipboard(s.clipboard_user_data) or_return)
+		input_text(s, s.get_clipboard(s.clipboard_user_data) or return)
 	}
 	return s.get_clipboard != nil
 }

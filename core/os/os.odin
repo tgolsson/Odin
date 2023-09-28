@@ -215,7 +215,7 @@ heap_allocator_proc :: proc(allocator_data: rawptr, mode: mem.Allocator_Mode,
 			return nil, nil
 		}
 
-		new_memory = aligned_alloc(new_size, new_alignment, p) or_return
+		new_memory = aligned_alloc(new_size, new_alignment, p) or return
 
 		// NOTE: heap_resize does not zero the new memory, so we do it
 		if new_size > old_size {

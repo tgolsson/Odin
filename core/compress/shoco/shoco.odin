@@ -95,7 +95,7 @@ decompress_slice_to_output_buffer :: proc(input: []u8, output: []u8, model := DE
 	inp, inp_end := 0, len(input)
 	out, out_end := 0, len(output)
 
-	validate_model(model) or_return
+	validate_model(model) or return
 
 	for inp < inp_end {
 		val  := transmute(i8)input[inp]
@@ -177,10 +177,10 @@ decompress_slice_to_string :: proc(input: []u8, model := DEFAULT_MODEL, allocato
 	max_output_size := decompress_bound(len(input), model)
 
 	buf: [dynamic]u8
-	resize(&buf, max_output_size) or_return
+	resize(&buf, max_output_size) or return
 
 	length, result := decompress_slice_to_output_buffer(input, buf[:])
-	resize(&buf, length) or_return
+	resize(&buf, length) or return
 	return string(buf[:]), result
 }
 decompress :: proc{decompress_slice_to_output_buffer, decompress_slice_to_string}
@@ -190,7 +190,7 @@ compress_string_to_buffer :: proc(input: string, output: []u8, model := DEFAULT_
 	out, out_end := 0, len(output)
 	output := output
 
-	validate_model(model) or_return
+	validate_model(model) or return
 
 	indices := make([]i16, model.max_successor_n + 1)
 	defer delete(indices)
@@ -305,10 +305,10 @@ compress_string :: proc(input: string, model := DEFAULT_MODEL, allocator := cont
 	max_output_size := compress_bound(len(input))
 
 	buf: [dynamic]u8
-	resize(&buf, max_output_size) or_return
+	resize(&buf, max_output_size) or return
 
 	length, result := compress_string_to_buffer(input, buf[:])
-	resize(&buf, length) or_return
+	resize(&buf, length) or return
 	return buf[:length], result
 }
 compress :: proc{compress_string_to_buffer, compress_string}

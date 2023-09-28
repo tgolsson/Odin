@@ -1488,19 +1488,18 @@ gb_internal Token expect_operator(AstFile *f) {
 	} else if (prev.kind == Token_or) {
 		// okay
 	} else if (prev.kind == Token_or_else || prev.kind == Token_or_return) {
-		// okay
+		f->tokens[f->curr_token_index].flags |= TokenFlag_Replace;
 	} else if (!gb_is_between(prev.kind, Token__OperatorBegin+1, Token__OperatorEnd-1)) {
 		String p = token_to_string(prev);
-		syntax_error(f->curr_token, "Expected an operator, got '%.*s'",
+		syntax_error(prev, "Expected an operator, got '%.*s'",
 		             LIT(p));
 	} else if (!f->allow_range && is_token_range(prev)) {
 		String p = token_to_string(prev);
-		syntax_error(f->curr_token, "Expected an non-range operator, got '%.*s'",
+		syntax_error(prev, "Expected an non-range operator, got '%.*s'",
 		             LIT(p));
 	}
-	if (f->curr_token.kind == Token_Ellipsis) {
-		syntax_warning(f->curr_token, "'..' for ranges has now been deprecated, prefer '..='");
-		f->tokens[f->curr_token_index].flags |= TokenFlag_Replace;
+	if (prev.kind == Token_Ellipsis) {
+		syntax_warning(prev, "'..' for ranges has now been deprecated, prefer '..='");
 	}
 	
 	advance_token(f);

@@ -79,7 +79,7 @@ environ :: proc(allocator := context.allocator) -> []string {
 			if i <= from {
 				break
 			}
-			append(&r, win32.utf16_to_utf8(envs[from:i], allocator) or_else "")
+			append(&r, win32.utf16_to_utf8(envs[from:i], allocator) or else "")
 			from = i + 1
 		}
 	}

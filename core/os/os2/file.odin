@@ -208,16 +208,16 @@ is_dir :: proc(path: string) -> bool {
 
 
 copy_file :: proc(dst_path, src_path: string) -> Error {
-	src := open(src_path) or_return
+	src := open(src_path) or return
 	defer close(src)
 
-	info := fstat(src, _file_allocator()) or_return
+	info := fstat(src, _file_allocator()) or return
 	defer file_info_delete(info, _file_allocator())
 	if info.is_dir {
 		return .Invalid_File
 	}
 
-	dst := open(dst_path, {.Read, .Write, .Create, .Trunc}, info.mode & File_Mode_Perm) or_return
+	dst := open(dst_path, {.Read, .Write, .Create, .Trunc}, info.mode & File_Mode_Perm) or return
 	defer close(dst)
 
 	_, err := io.copy(to_writer(dst), to_reader(src))

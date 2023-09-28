@@ -369,7 +369,7 @@ map_alloc_dynamic :: proc "odin" (info: ^Map_Info, log2_capacity: uintptr, alloc
 
 	size := map_total_allocation_size(capacity, info)
 
-	data := mem_alloc_non_zeroed(int(size), MAP_CACHE_LINE_SIZE, allocator, loc) or_return
+	data := mem_alloc_non_zeroed(int(size), MAP_CACHE_LINE_SIZE, allocator, loc) or return
 	data_ptr := uintptr(raw_data(data))
 	if data_ptr == 0 {
 		err = .Out_Of_Memory
@@ -592,11 +592,11 @@ map_reserve_dynamic :: proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_
 	log2_min_cap := max(MAP_MIN_LOG2_CAPACITY, log2_new_capacity)
 
 	if m.data == 0 {
-		m^ = map_alloc_dynamic(info, log2_min_cap, m.allocator, loc) or_return
+		m^ = map_alloc_dynamic(info, log2_min_cap, m.allocator, loc) or return
 		return nil
 	}
 
-	resized := map_alloc_dynamic(info, log2_min_cap, m.allocator, loc) or_return
+	resized := map_alloc_dynamic(info, log2_min_cap, m.allocator, loc) or return
 
 	ks, vs, hs, _, _ := map_kvh_data_dynamic(m^, info)
 
@@ -622,7 +622,7 @@ map_reserve_dynamic :: proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_
 		}
 	}
 
-	map_free_dynamic(m^, info, loc) or_return
+	map_free_dynamic(m^, info, loc) or return
 	m.data = resized.data
 	return nil
 }
@@ -642,7 +642,7 @@ map_shrink_dynamic :: proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_I
 		return nil
 	}
 
-	shrunk := map_alloc_dynamic(info, log2_capacity - 1, m.allocator) or_return
+	shrunk := map_alloc_dynamic(info, log2_capacity - 1, m.allocator) or return
 
 	capacity := uintptr(1) << log2_capacity
 
@@ -670,7 +670,7 @@ map_shrink_dynamic :: proc "odin" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_I
 		}
 	}
 
-	map_free_dynamic(m^, info, loc) or_return
+	map_free_dynamic(m^, info, loc) or return
 	m.data = shrunk.data
 	return nil
 }
@@ -738,7 +738,7 @@ map_exists_dynamic :: proc "contextless" (m: Raw_Map, #no_alias info: ^Map_Info,
 
 @(require_results)
 map_erase_dynamic :: #force_inline proc "contextless" (#no_alias m: ^Raw_Map, #no_alias info: ^Map_Info, k: uintptr) -> (old_k, old_v: uintptr, ok: bool) {
-	index := map_lookup_dynamic(m^, info, k) or_return
+	index := map_lookup_dynamic(m^, info, k) or return
 	ks, vs, hs, _, _ := map_kvh_data_dynamic(m^, info)
 	hs[index] |= TOMBSTONE_MASK
 	old_k = map_cell_index_dynamic(ks, info.ks, index)

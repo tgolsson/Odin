@@ -227,7 +227,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 	data := data
 	context.allocator = allocator
 
-	opts := validate_options(options) or_return
+	opts := validate_options(options) or return
 
 	/*
 		If `.Input_May_Be_Modified` is not specified, we duplicate the input so that we can modify it in-place.
@@ -284,7 +284,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 				doc.elements[element].parent = parent
 				doc.elements[element].ident  = open.text
 
-				parse_attributes(doc, &doc.elements[element].attribs) or_return
+				parse_attributes(doc, &doc.elements[element].attribs) or return
 
 				/*
 					If a DOCTYPE is present _or_ the caller
@@ -315,7 +315,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 					/*
 						Empty tag. Close it.
 					*/
-					expect(t, .Gt) or_return
+					expect(t, .Gt) or return
 					parent      = doc.elements[element].parent
 					element     = parent
 
@@ -328,8 +328,8 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 				/*
 					Close tag.
 				*/
-				ident := expect(t, .Ident) or_return
-				_      = expect(t, .Gt)    or_return
+				ident := expect(t, .Ident) or return
+				_      = expect(t, .Gt)    or return
 
 				if doc.elements[element].ident != ident.text {
 					error(t, t.offset, "Mismatched Closing Tag. Expected %v, got %v\n", doc.elements[element].ident, ident.text)
@@ -353,7 +353,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 						if doc.element_count > 0 {
 							return doc, .DocType_Must_Preceed_Elements
 						}
-						parse_doctype(doc) or_return
+						parse_doctype(doc) or return
 
 						if len(expected_doctype) > 0 && expected_doctype != doc.doctype.ident {
 							error(t, t.offset, "Invalid DOCTYPE. Expected: %v, got: %v\n", expected_doctype, doc.doctype.ident)
@@ -366,7 +366,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 							error(t, t.offset, "Unhandled: <!%v\n", next.text)
 							return doc, .Unhandled_Bang
 						}
-						skip_element(t) or_return
+						skip_element(t) or return
 					}
 
 				case .Dash:
@@ -375,7 +375,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 						The grammar does not allow a comment to end in --->
 					*/
 					expect(t, .Dash)
-					comment := scan_comment(t) or_return
+					comment := scan_comment(t) or return
 
 					if .Intern_Comments in opts.flags {
 						if len(doc.elements) == 0 {
@@ -402,7 +402,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 				#partial switch next.kind {
 				case .Ident:
 					if len(next.text) == 3 && strings.equal_fold(next.text, "xml") {
-						parse_prologue(doc) or_return
+						parse_prologue(doc) or return
 					} else if len(doc.prologue) > 0 {
 						/*
 							We've already seen a prologue.
@@ -412,7 +412,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 						/*
 							Could be `<?xml-stylesheet`, etc. Ignore it.
 						*/
-						skip_element(t) or_return
+						skip_element(t) or return
 					}
 				case:
 					error(t, t.offset, "Expected \"<?xml\", got \"<?%v\".", next.text)
@@ -434,7 +434,7 @@ parse_bytes :: proc(data: []u8, options := DEFAULT_OPTIONS, path := "", error_ha
 			/*
 				This should be a tag's body text.
 			*/
-			body_text        := scan_string(t, t.offset) or_return
+			body_text        := scan_string(t, t.offset) or return
 			needs_processing := .Unbox_CDATA          in opts.flags
 			needs_processing |= .Decode_SGML_Entities in opts.flags
 
@@ -549,11 +549,11 @@ parse_attribute :: proc(doc: ^Document) -> (attr: Attribute, offset: int, err: E
 	context.allocator = doc.allocator
 	t := doc.tokenizer
 
-	key    := expect(t, .Ident)  or_return
+	key    := expect(t, .Ident)  or return
 	offset  = t.offset - len(key.text)
 
-	_       = expect(t, .Eq)     or_return
-	value  := expect(t, .String) or_return
+	_       = expect(t, .Eq)     or return
+	value  := expect(t, .String) or return
 
 	attr.key = key.text
 	attr.val = value.text
@@ -578,8 +578,8 @@ parse_attributes :: proc(doc: ^Document, attribs: ^Attributes) -> (err: Error) {
 	t := doc.tokenizer
 
 	for peek(t).kind == .Ident {
-		attr, offset := parse_attribute(doc)                  or_return
-		check_duplicate_attributes(t, attribs^, attr, offset) or_return
+		attr, offset := parse_attribute(doc)                  or return
+		check_duplicate_attributes(t, attribs^, attr, offset) or return
 		append(attribs, attr)
 	}
 	skip_whitespace(t)
@@ -592,7 +592,7 @@ parse_prologue :: proc(doc: ^Document) -> (err: Error) {
 	t := doc.tokenizer
 
 	offset := t.offset
-	parse_attributes(doc, &doc.prologue) or_return
+	parse_attributes(doc, &doc.prologue) or return
 
 	for attr in doc.prologue {
 		switch attr.key {
@@ -624,8 +624,8 @@ parse_prologue :: proc(doc: ^Document) -> (err: Error) {
 		}
 	}
 
-	_ = expect(t, .Question) or_return
-	_ = expect(t, .Gt)       or_return
+	_ = expect(t, .Question) or return
+	_ = expect(t, .Gt)       or return
 
 	return .None
 }
@@ -668,12 +668,12 @@ parse_doctype :: proc(doc: ^Document) -> (err: Error) {
 	context.allocator = doc.allocator
 	t := doc.tokenizer
 
-	tok := expect(t, .Ident) or_return
+	tok := expect(t, .Ident) or return
 	doc.doctype.ident = tok.text
 
 	skip_whitespace(t)
 	offset := t.offset
-	skip_element(t) or_return
+	skip_element(t) or return
 
 	/*
 		-1 because the current offset is that of the closing tag, so the rest of the DOCTYPE tag ends just before it.

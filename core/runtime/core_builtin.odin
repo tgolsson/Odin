@@ -245,14 +245,14 @@ new :: proc($T: typeid, allocator := context.allocator, loc := #caller_location)
 }
 @(require_results)
 new_aligned :: proc($T: typeid, alignment: int, allocator := context.allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) {
-	data := mem_alloc_bytes(size_of(T), alignment, allocator, loc) or_return
+	data := mem_alloc_bytes(size_of(T), alignment, allocator, loc) or return
 	t = (^T)(raw_data(data))
 	return
 }
 
 @(builtin, require_results)
 new_clone :: proc(data: $T, allocator := context.allocator, loc := #caller_location) -> (t: ^T, err: Allocator_Error) #optional_allocator_error {
-	t_data := mem_alloc_bytes(size_of(T), align_of(T), allocator, loc) or_return
+	t_data := mem_alloc_bytes(size_of(T), align_of(T), allocator, loc) or return
 	t = (^T)(raw_data(t_data))
 	if t != nil {
 		t^ = data
@@ -304,7 +304,7 @@ make_dynamic_array_len :: proc($T: typeid/[dynamic]$E, #any_int len: int, alloca
 @(builtin, require_results)
 make_dynamic_array_len_cap :: proc($T: typeid/[dynamic]$E, #any_int len: int, #any_int cap: int, allocator := context.allocator, loc := #caller_location) -> (array: T, err: Allocator_Error) #optional_allocator_error {
 	make_dynamic_array_error_loc(loc, len, cap)
-	data := mem_alloc_bytes(size_of(E)*cap, align_of(E), allocator, loc) or_return
+	data := mem_alloc_bytes(size_of(E)*cap, align_of(E), allocator, loc) or return
 	s := Raw_Dynamic_Array{raw_data(data), len, cap, allocator}
 	if data == nil && size_of(E) != 0 {
 		s.len, s.cap = 0, 0
@@ -333,7 +333,7 @@ make_map :: proc($T: typeid/map[$K]$E, #any_int capacity: int = 1<<MAP_MIN_LOG2_
 @(builtin, require_results)
 make_multi_pointer :: proc($T: typeid/[^]$E, #any_int len: int, allocator := context.allocator, loc := #caller_location) -> (mp: T, err: Allocator_Error) #optional_allocator_error {
 	make_slice_error_loc(loc, len)
-	data := mem_alloc_bytes(size_of(E)*len, align_of(E), allocator, loc) or_return
+	data := mem_alloc_bytes(size_of(E)*len, align_of(E), allocator, loc) or return
 	if data == nil && size_of(E) != 0 {
 		return
 	}
@@ -418,7 +418,7 @@ append_elem :: proc(array: ^$T/[dynamic]$E, arg: E, loc := #caller_location) -> 
 	} else {
 		if cap(array) < len(array)+1 {
 			cap := 2 * cap(array) + max(8, 1)
-			err = reserve(array, cap, loc) // do not 'or_return' here as it could be a partial success
+			err = reserve(array, cap, loc) // do not 'or return' here as it could be a partial success
 		}
 		if cap(array)-len(array) > 0 {
 			a := (^Raw_Dynamic_Array)(array)
@@ -452,7 +452,7 @@ append_elems :: proc(array: ^$T/[dynamic]$E, args: ..E, loc := #caller_location)
 	} else {
 		if cap(array) < len(array)+arg_len {
 			cap := 2 * cap(array) + max(8, arg_len)
-			err = reserve(array, cap, loc)  // do not 'or_return' here as it could be a partial success
+			err = reserve(array, cap, loc)  // do not 'or return' here as it could be a partial success
 		}
 		arg_len = min(cap(array)-len(array), arg_len)
 		if arg_len > 0 {
@@ -500,7 +500,7 @@ append_nothing :: proc(array: ^$T/[dynamic]$E, loc := #caller_location) -> (n: i
 		return 0, nil
 	}
 	prev_len := len(array)
-	resize(array, len(array)+1, loc) or_return
+	resize(array, len(array)+1, loc) or return
 	return len(array)-prev_len, nil
 }
 
@@ -514,7 +514,7 @@ inject_at_elem :: proc(array: ^$T/[dynamic]$E, index: int, arg: E, loc := #calle
 	m :: 1
 	new_size := n + m
 
-	resize(array, new_size, loc) or_return
+	resize(array, new_size, loc) or return
 	when size_of(E) != 0 {
 		copy(array[index + m:], array[index:])
 		array[index] = arg
@@ -537,7 +537,7 @@ inject_at_elems :: proc(array: ^$T/[dynamic]$E, index: int, args: ..E, loc := #c
 	m := len(args)
 	new_size := n + m
 
-	resize(array, new_size, loc) or_return
+	resize(array, new_size, loc) or return
 	when size_of(E) != 0 {
 		copy(array[index + m:], array[index:])
 		copy(array[index:], args)
@@ -560,7 +560,7 @@ inject_at_elem_string :: proc(array: ^$T/[dynamic]$E/u8, index: int, arg: string
 	m := len(arg)
 	new_size := n + m
 
-	resize(array, new_size, loc) or_return
+	resize(array, new_size, loc) or return
 	copy(array[index+m:], array[index:])
 	copy(array[index:], arg)
 	ok = true
@@ -577,7 +577,7 @@ assign_at_elem :: proc(array: ^$T/[dynamic]$E, index: int, arg: E, loc := #calle
 		array[index] = arg
 		ok = true
 	} else {
-		resize(array, index+1, loc) or_return
+		resize(array, index+1, loc) or return
 		array[index] = arg
 		ok = true
 	}
@@ -591,7 +591,7 @@ assign_at_elems :: proc(array: ^$T/[dynamic]$E, index: int, args: ..E, loc := #c
 		copy(array[index:], args)
 		ok = true
 	} else {
-		resize(array, index+1+len(args), loc) or_return
+		resize(array, index+1+len(args), loc) or return
 		copy(array[index:], args)
 		ok = true
 	}
@@ -608,7 +608,7 @@ assign_at_elem_string :: proc(array: ^$T/[dynamic]$E/u8, index: int, arg: string
 		copy(array[index:], arg)
 		ok = true
 	} else {
-		resize(array, new_size, loc) or_return
+		resize(array, new_size, loc) or return
 		copy(array[index:], arg)
 		ok = true
 	}
@@ -653,7 +653,7 @@ reserve_dynamic_array :: proc(array: ^$T/[dynamic]$E, capacity: int, loc := #cal
 	new_size  := capacity * size_of(E)
 	allocator := a.allocator
 
-	new_data := mem_resize(a.data, old_size, new_size, align_of(E), allocator, loc) or_return
+	new_data := mem_resize(a.data, old_size, new_size, align_of(E), allocator, loc) or return
 	if new_data == nil && new_size > 0 {
 		return .Out_Of_Memory
 	}
@@ -687,7 +687,7 @@ resize_dynamic_array :: proc(array: ^$T/[dynamic]$E, length: int, loc := #caller
 	new_size  := length * size_of(E)
 	allocator := a.allocator
 
-	new_data := mem_resize(a.data, old_size, new_size, align_of(E), allocator, loc) or_return
+	new_data := mem_resize(a.data, old_size, new_size, align_of(E), allocator, loc) or return
 	if new_data == nil && new_size > 0 {
 		return .Out_Of_Memory
 	}
@@ -729,7 +729,7 @@ shrink_dynamic_array :: proc(array: ^$T/[dynamic]$E, new_cap := -1, loc := #call
 	old_size := a.cap * size_of(E)
 	new_size := new_cap * size_of(E)
 
-	new_data := mem_resize(a.data, old_size, new_size, align_of(E), a.allocator, loc) or_return
+	new_data := mem_resize(a.data, old_size, new_size, align_of(E), a.allocator, loc) or return
 
 	a.data = raw_data(new_data)
 	a.len = min(new_cap, a.len)

@@ -25,8 +25,8 @@ decode :: proc(src: []byte, allocator := context.allocator) -> (dst: []byte, ok:
 		p := src[j-1]
 		q := src[j]
 
-		a := hex_digit(p) or_return
-		b := hex_digit(q) or_return
+		a := hex_digit(p) or return
+		b := hex_digit(q) or return
 
 		dst[i] = (a << 4) | b
 		i += 1
@@ -47,8 +47,8 @@ decode_sequence :: proc(str: string) -> (res: byte, ok: bool) {
 		return 0, false
 	}
 
-	upper := hex_digit(str[0]) or_return
-	lower := hex_digit(str[1]) or_return
+	upper := hex_digit(str[0]) or return
+	lower := hex_digit(str[1]) or return
 
 	return upper << 4 | lower, true
 }

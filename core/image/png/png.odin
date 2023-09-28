@@ -222,7 +222,7 @@ copy_chunk :: proc(src: image.PNG_Chunk, allocator := context.allocator) -> (des
 
 	dest.header = src.header
 	dest.crc    = src.crc
-	dest.data   = make([]u8, dest.header.length, allocator) or_return
+	dest.data   = make([]u8, dest.header.length, allocator) or return
 
 	copy(dest.data[:], src.data[:])
 	return
@@ -233,7 +233,7 @@ append_chunk :: proc(list: ^[dynamic]image.PNG_Chunk, src: image.PNG_Chunk, allo
 		return .Invalid_Chunk_Length
 	}
 
-	c := copy_chunk(src, allocator) or_return
+	c := copy_chunk(src, allocator) or return
 	length := len(list)
 	append(list, c)
 	if len(list) != length + 1 {
@@ -414,7 +414,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 			}
 			seen_ihdr = true
 
-			header = read_header(ctx) or_return
+			header = read_header(ctx) or return
 
 			if .Paletted in header.color_type {
 				// Color type 3
@@ -468,7 +468,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 				return img, .PLTE_Encountered_Unexpectedly
 			}
 
-			c = read_chunk(ctx) or_return
+			c = read_chunk(ctx) or return
 
 			if c.header.length % 3 != 0 || c.header.length > 768 {
 				return img, .PLTE_Invalid_Length
@@ -480,7 +480,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 			}
 
 			if .return_metadata in options {
-				append_chunk(&info.chunks, c) or_return
+				append_chunk(&info.chunks, c) or return
 			}
 
 		case .IDAT:
@@ -500,7 +500,7 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 
 			next := ch.type
 			for next == .IDAT {
-				c = read_chunk(ctx) or_return
+				c = read_chunk(ctx) or return
 
 				bytes.buffer_write(&idat_b, c.data)
 				idat_length += u64(c.header.length)
@@ -523,14 +523,14 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 			seen_idat = true
 
 		case .IEND:
-			c = read_chunk(ctx) or_return
+			c = read_chunk(ctx) or return
 			seen_iend = true
 
 		case .bKGD:
-			c = read_chunk(ctx) or_return
+			c = read_chunk(ctx) or return
 			seen_bkgd = true
 			if .return_metadata in options {
-				append_chunk(&info.chunks, c) or_return
+				append_chunk(&info.chunks, c) or return
 			}
 
 			ct := transmute(u8)info.header.color_type
@@ -560,14 +560,14 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 			}
 
 		case .tRNS:
-			c = read_chunk(ctx) or_return
+			c = read_chunk(ctx) or return
 
 			if .Alpha in info.header.color_type {
 				return img, .TRNS_Encountered_Unexpectedly
 			}
 
 			if .return_metadata in options {
-				append_chunk(&info.chunks, c) or_return
+				append_chunk(&info.chunks, c) or return
 			}
 
 			/*
@@ -614,9 +614,9 @@ load_from_context :: proc(ctx: ^$C, options := Options{}, allocator := context.a
 
 		case:
 			// Unhandled type
-			c = read_chunk(ctx) or_return
+			c = read_chunk(ctx) or return
 			if .return_metadata in options {
-				append_chunk(&info.chunks, c) or_return
+				append_chunk(&info.chunks, c) or return
 			}
 
 			first = false

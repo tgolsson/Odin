@@ -39,7 +39,7 @@ validate_object_body :: proc(p: ^Parser, end_token: Token_Kind) -> bool {
 		if parse_colon(p) != nil {
 			return false
 		}
-		validate_value(p) or_return
+		validate_value(p) or return
 
 		if parse_comma(p) {
 			break
@@ -53,7 +53,7 @@ validate_object :: proc(p: ^Parser) -> bool {
 		return false
 	}
 	
-	validate_object_body(p, .Close_Brace) or_return
+	validate_object_body(p, .Close_Brace) or return
 
 	if err := expect_token(p, .Close_Brace); err != .None {
 		return false

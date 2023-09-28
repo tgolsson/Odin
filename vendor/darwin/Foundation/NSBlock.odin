@@ -89,7 +89,7 @@ internal_block_literal_make :: proc (is_global: bool, user_data: rawptr, user_pr
 		bl.user_data = user_data
 	}
 	if is_global {
-		bl := builtin.new (Internal_Block_Literal, allocator) or_return
+		bl := builtin.new (Internal_Block_Literal, allocator) or return
 		_init(bl, true, user_data, user_proc, invoke)
 		return auto_cast bl, .None
 	} else {

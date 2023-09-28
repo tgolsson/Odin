@@ -129,13 +129,13 @@ benchmark :: proc(options: ^Benchmark_Options, allocator := context.allocator) -
 	assert(options.bench != nil)
 
 	if options.setup != nil {
-		options->setup(allocator) or_return
+		options->setup(allocator) or return
 	}
 
 	diff: Duration
 	{
 		SCOPED_TICK_DURATION(&diff)
-		options->bench(allocator) or_return
+		options->bench(allocator) or return
 	}
 	options.duration = diff
 
@@ -144,7 +144,7 @@ benchmark :: proc(options: ^Benchmark_Options, allocator := context.allocator) -
 	options.megabytes_per_second = f64(options.processed) / f64(1024 * 1024) * times_per_second
 
 	if options.teardown != nil {
-		options->teardown(allocator) or_return
+		options->teardown(allocator) or return
 	}
 	return
 }

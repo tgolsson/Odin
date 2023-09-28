@@ -29,7 +29,7 @@ int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, alloc
 	context.allocator = allocator
 
 	a := a; radix := radix
-	clear_if_uninitialized(a) or_return
+	clear_if_uninitialized(a) or return
 
 	/*
 		TODO: If we want to write a prefix for some of the radixes, we can oversize the buffer.
@@ -40,7 +40,7 @@ int_itoa_string :: proc(a: ^Int, radix := i8(10), zero_terminate := false, alloc
 		Calculate the size of the buffer we need, and 
 		Exit if calculating the size returned an error.
 	*/
-	size := radix_size(a, radix, zero_terminate) or_return
+	size := radix_size(a, radix, zero_terminate) or return
 
 	/*
 		Allocate the buffer we need.
@@ -65,7 +65,7 @@ int_itoa_cstring :: proc(a: ^Int, radix := i8(10), allocator := context.allocato
 	context.allocator = allocator
 
 	a := a; radix := radix
-	clear_if_uninitialized(a) or_return
+	clear_if_uninitialized(a) or return
 
 	s: string
 	s, err = int_itoa_string(a, radix, true)
@@ -95,7 +95,7 @@ int_itoa_cstring :: proc(a: ^Int, radix := i8(10), allocator := context.allocato
 int_itoa_raw :: proc(a: ^Int, radix: i8, buffer: []u8, size := int(-1), zero_terminate := false) -> (written: int, err: Error) {
 	assert_if_nil(a)
 	a := a; radix := radix; size := size
-	clear_if_uninitialized(a) or_return
+	clear_if_uninitialized(a) or return
 	/*
 		Radix defaults to 10.
 	*/
@@ -108,7 +108,7 @@ int_itoa_raw :: proc(a: ^Int, radix: i8, buffer: []u8, size := int(-1), zero_ter
 		We weren't given a size. Let's compute it.
 	*/
 	if size == -1 {
-		size = radix_size(a, radix, zero_terminate) or_return
+		size = radix_size(a, radix, zero_terminate) or return
 	}
 
 	/*
@@ -245,7 +245,7 @@ int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator := context
 	/*
 		Set the integer to the default of zero.
 	*/
-	internal_zero(res) or_return
+	internal_zero(res) or return
 
 	/*
 		We'll interpret an empty string as zero.
@@ -292,8 +292,8 @@ int_atoi :: proc(res: ^Int, input: string, radix := i8(10), allocator := context
 			break
 		}
 
-		internal_mul(res, res, DIGIT(radix)) or_return
-		internal_add(res, res, DIGIT(y))     or_return
+		internal_mul(res, res, DIGIT(radix)) or return
+		internal_add(res, res, DIGIT(y))     or return
 
 		input = input[1:]
 	}
@@ -324,7 +324,7 @@ radix_size :: proc(a: ^Int, radix: i8, zero_terminate := false, allocator := con
 	assert_if_nil(a)
 
 	if radix < 2 || radix > 64                     { return -1, .Invalid_Argument }
-	clear_if_uninitialized(a) or_return
+	clear_if_uninitialized(a) or return
 
 	if internal_is_zero(a) {
 		if zero_terminate {
@@ -343,22 +343,22 @@ radix_size :: proc(a: ^Int, radix: i8, zero_terminate := false, allocator := con
 			digit     = a.digit,
 		}
 
-		size = internal_log(t, DIGIT(radix)) or_return
+		size = internal_log(t, DIGIT(radix)) or return
 	} else {
 		la, k := &Int{}, &Int{}
 		defer internal_destroy(la, k)
 
 		/* la = floor(log_2(a)) + 1 */
 		bit_count := internal_count_bits(a)
-		internal_set(la, bit_count) or_return
+		internal_set(la, bit_count) or return
 
 		/* k = floor(2^29/log_2(radix)) + 1 */
 		lb := _log_bases
-		internal_set(k, lb[radix]) or_return
+		internal_set(k, lb[radix]) or return
 
 		/* n = floor((la *  k) / 2^29) + 1 */
-		internal_mul(k, la, k) or_return
-		internal_shr(k, k, _RADIX_SIZE_SCALE) or_return
+		internal_mul(k, la, k) or return
+		internal_shr(k, k, _RADIX_SIZE_SCALE) or return
 
 		/* The "+1" here is the "+1" in "floor((la *  k) / 2^29) + 1" */
 		/* n = n + 1 + EOS + sign */
@@ -418,7 +418,7 @@ internal_int_write_to_ascii_file :: proc(a: ^Int, filename: string, radix := i8(
 		If we want to preserve memory we could duplicate the itoa logic and write backwards.
 	*/
 
-	as := itoa(a, radix) or_return
+	as := itoa(a, radix) or return
 	defer delete(as)
 
 	l := len(as)
@@ -495,7 +495,7 @@ internal_int_pack :: proc(a: ^Int, buf: []$T, nails := 0, order := Order.LSB_Fir
 		}
 
 		bits_to_get := min(type_bits, bit_count - bit_offset)
-		W := internal_int_bitfield_extract(a, bit_offset, bits_to_get) or_return
+		W := internal_int_bitfield_extract(a, bit_offset, bits_to_get) or return
 		buf[word_offset] = T(W)
 	}
 
@@ -523,22 +523,22 @@ internal_int_unpack :: proc(a: ^Int, buf: []$T, nails := 0, order := Order.LSB_F
 	/*
 		Pre-size output Int.
 	*/
-	internal_grow(a, digit_count) or_return
+	internal_grow(a, digit_count) or return
 
 	t := &Int{}
 	defer internal_destroy(t)
 
 	if order == .LSB_First {
 		for W, i in buf {
-			internal_set(t, W & type_mask)                           or_return
-			internal_shl(t, t, type_bits * i)                        or_return
-			internal_add(a, a, t)                                    or_return
+			internal_set(t, W & type_mask)                           or return
+			internal_shl(t, t, type_bits * i)                        or return
+			internal_add(a, a, t)                                    or return
 		}
 	} else {
 		for W in buf {
-			internal_set(t, W & type_mask)                           or_return
-			internal_shl(a, a, type_bits)                            or_return
-			internal_add(a, a, t)                                    or_return
+			internal_set(t, W & type_mask)                           or return
+			internal_shl(a, a, type_bits)                            or return
+			internal_add(a, a, t)                                    or return
 		}		
 	}
 
@@ -602,8 +602,8 @@ _itoa_raw_full :: proc(a: ^Int, radix: i8, buffer: []u8, zero_terminate := false
 
 	temp, denominator := &Int{}, &Int{}
 
-	internal_copy(temp, a)           or_return
-	internal_set(denominator, radix) or_return
+	internal_copy(temp, a)           or return
+	internal_set(denominator, radix) or return
 
 	available := len(buffer)
 	if zero_terminate {

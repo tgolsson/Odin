@@ -20,8 +20,8 @@ commit :: proc "contextless" (data: rawptr, size: uint) -> Allocator_Error {
 
 @(require_results)
 reserve_and_commit :: proc "contextless" (size: uint) -> (data: []byte, err: Allocator_Error) {
-	data = reserve(size) or_return
-	commit(raw_data(data), size) or_return
+	data = reserve(size) or return
+	commit(raw_data(data), size) or return
 	return
 }
 
@@ -92,10 +92,10 @@ memory_block_alloc :: proc(committed, reserved: uint, flags: Memory_Block_Flags)
 		do_protection  = true
 	}
 	
-	pmblock := platform_memory_alloc(0, total_size) or_return
+	pmblock := platform_memory_alloc(0, total_size) or return
 	
 	pmblock.block.base = ([^]byte)(pmblock)[base_offset:]
-	platform_memory_commit(pmblock, uint(base_offset) + committed) or_return
+	platform_memory_commit(pmblock, uint(base_offset) + committed) or return
 
 	// Should be zeroed
 	assert(pmblock.block.used == 0)
@@ -138,7 +138,7 @@ alloc_from_memory_block :: proc(block: ^Memory_Block, min_size, alignment: uint)
 			assert(pmblock.committed <= pmblock.reserved)
 			assert(pmblock.committed < platform_total_commit)
 
-			platform_memory_commit(pmblock, platform_total_commit) or_return
+			platform_memory_commit(pmblock, platform_total_commit) or return
 
 			pmblock.committed = platform_total_commit
 			block.committed = pmblock.committed - base_offset
@@ -163,7 +163,7 @@ alloc_from_memory_block :: proc(block: ^Memory_Block, min_size, alignment: uint)
 		return
 	}
 	assert(block.committed <= block.reserved)
-	do_commit_if_necessary(block, size) or_return
+	do_commit_if_necessary(block, size) or return
 
 	data = block.base[block.used+alignment_offset:][:min_size]
 	block.used += size

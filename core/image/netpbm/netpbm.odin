@@ -35,10 +35,10 @@ load_from_bytes :: proc(data: []byte, allocator := context.allocator) -> (img: ^
 
 	header: Header; defer header_destroy(&header)
 	header_size: int
-	header, header_size = parse_header(data) or_return
+	header, header_size = parse_header(data) or return
 
 	img_data := data[header_size:]
-	decode_image(img, header, img_data) or_return
+	decode_image(img, header, img_data) or return
 
 	info := new(Info)
 	info.header = header

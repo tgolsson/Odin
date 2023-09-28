@@ -114,7 +114,7 @@ peek_back :: proc(q: ^$Q/Queue($T), loc := #caller_location) -> ^T {
 // Push an element to the back of the queue
 push_back :: proc(q: ^$Q/Queue($T), elem: T) -> (ok: bool, err: runtime.Allocator_Error) {
 	if space(q^) == 0 {
-		_grow(q) or_return
+		_grow(q) or return
 	}
 	idx := (q.offset+uint(q.len))%builtin.len(q.data)
 	q.data[idx] = elem
@@ -125,7 +125,7 @@ push_back :: proc(q: ^$Q/Queue($T), elem: T) -> (ok: bool, err: runtime.Allocato
 // Push an element to the front of the queue
 push_front :: proc(q: ^$Q/Queue($T), elem: T) -> (ok: bool, err: runtime.Allocator_Error)  {
 	if space(q^) == 0 {
-		_grow(q) or_return
+		_grow(q) or return
 	}	
 	q.offset = uint(q.offset - 1 + builtin.len(q.data)) % builtin.len(q.data)
 	q.len += 1
@@ -176,7 +176,7 @@ pop_front_safe :: proc(q: ^$Q/Queue($T)) -> (elem: T, ok: bool) {
 push_back_elems :: proc(q: ^$Q/Queue($T), elems: ..T) -> (ok: bool, err: runtime.Allocator_Error)  {
 	n := uint(builtin.len(elems))
 	if space(q^) < int(n) {
-		_grow(q, q.len + n) or_return
+		_grow(q, q.len + n) or return
 	}
 	
 	sz := uint(builtin.len(q.data))
@@ -228,7 +228,7 @@ clear :: proc(q: ^$Q/Queue($T)) {
 _grow :: proc(q: ^$Q/Queue($T), min_capacity: uint = 0) -> runtime.Allocator_Error {
 	new_capacity := max(min_capacity, uint(8), uint(builtin.len(q.data))*2)
 	n := uint(builtin.len(q.data))
-	builtin.resize(&q.data, int(new_capacity)) or_return
+	builtin.resize(&q.data, int(new_capacity)) or return
 	if q.offset + q.len > n {
 		diff := n - q.offset
 		copy(q.data[new_capacity-diff:], q.data[q.offset:][:diff])

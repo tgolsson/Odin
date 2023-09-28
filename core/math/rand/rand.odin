@@ -729,13 +729,13 @@ Example:
 
 	perm_example :: proc() -> (err: mem.Allocator_Error) {
 		// Using the global random number generator and using the context allocator
-		data := rand.perm(4) or_return
+		data := rand.perm(4) or return
 		fmt.println(data)
 		defer delete(data, context.allocator)
 
 		// Using local random number generator and temp allocator
 		my_rand := rand.create(1)
-		data_tmp := rand.perm(4, &my_rand, context.temp_allocator) or_return
+		data_tmp := rand.perm(4, &my_rand, context.temp_allocator) or return
 		fmt.println(data_tmp)
 
 		return
@@ -749,7 +749,7 @@ Possible Output:
 */
 @(require_results)
 perm :: proc(n: int, r: ^Rand = nil, allocator := context.allocator) -> (res: []int, err: mem.Allocator_Error) #optional_allocator_error {
-	m := make([]int, n, allocator) or_return
+	m := make([]int, n, allocator) or return
 	for i := 0; i < n; i += 1 {
 		j := int_max(i+1, r)
 		m[i] = m[j]

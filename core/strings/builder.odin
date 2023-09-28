@@ -36,7 +36,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_make_none :: proc(allocator := context.allocator, loc := #caller_location) -> (res: Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	return Builder{buf=make([dynamic]byte, allocator, loc) or_return }, nil
+	return Builder{buf=make([dynamic]byte, allocator, loc) or return }, nil
 }
 /*
 Produces a Builder with a specified length and cap of max(16,len) byte buffer
@@ -52,7 +52,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_make_len :: proc(len: int, allocator := context.allocator, loc := #caller_location) -> (res: Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	return Builder{buf=make([dynamic]byte, len, allocator, loc) or_return }, nil
+	return Builder{buf=make([dynamic]byte, len, allocator, loc) or return }, nil
 }
 /*
 Produces a Builder with a specified length and cap
@@ -69,7 +69,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_make_len_cap :: proc(len, cap: int, allocator := context.allocator, loc := #caller_location) -> (res: Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	return Builder{buf=make([dynamic]byte, len, cap, allocator, loc) or_return }, nil
+	return Builder{buf=make([dynamic]byte, len, cap, allocator, loc) or return }, nil
 }
 /*
 Produces a String Builder
@@ -117,7 +117,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_init_none :: proc(b: ^Builder, allocator := context.allocator, loc := #caller_location) -> (res: ^Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	b.buf = make([dynamic]byte, allocator, loc) or_return
+	b.buf = make([dynamic]byte, allocator, loc) or return
 	return b, nil
 }
 /*
@@ -136,7 +136,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_init_len :: proc(b: ^Builder, len: int, allocator := context.allocator, loc := #caller_location) -> (res: ^Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	b.buf = make([dynamic]byte, len, allocator, loc) or_return
+	b.buf = make([dynamic]byte, len, allocator, loc) or return
 	return b, nil
 }
 /*
@@ -154,7 +154,7 @@ Returns:
 - err: An optional allocator error if one occured, `nil` otherwise
 */
 builder_init_len_cap :: proc(b: ^Builder, len, cap: int, allocator := context.allocator, loc := #caller_location) -> (res: ^Builder, err: mem.Allocator_Error) #optional_allocator_error {
-	b.buf = make([dynamic]byte, len, cap, allocator, loc) or_return
+	b.buf = make([dynamic]byte, len, cap, allocator, loc) or return
 	return b, nil
 }
 // Overload simple `builder_init_*` with or without len / ap parameters

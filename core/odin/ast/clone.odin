@@ -82,7 +82,7 @@ clone_node :: proc(node: ^Node) -> ^Node {
 		panic("Cannot clone this node type")
 	}
 
-	res := cast(^Node)(mem.alloc(size, align) or_else nil)
+	res := cast(^Node)(mem.alloc(size, align) or else nil)
 	if res == nil {
 		// allocation failure
 		return nil

@@ -304,7 +304,7 @@ _glob :: proc(dir, pattern: string, matches: ^[dynamic]string, allocator := cont
 
 	for fi in fis {
 		n := fi.name
-		matched := match(pattern, n) or_return
+		matched := match(pattern, n) or return
 		if matched {
 			append(&m, join({dir, n}))
 		}

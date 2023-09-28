@@ -1080,7 +1080,7 @@ parse_f64_prefix :: proc(str: string) -> (value: f64, nr: int, ok: bool) {
 	mantissa: u64
 	exp:      int
 	neg, trunc, hex: bool
-	mantissa, exp, neg, trunc, hex, nr = parse_components(str) or_return
+	mantissa, exp, neg, trunc, hex, nr = parse_components(str) or return
 
 	if hex {
 		value, ok = parse_hex(str, mantissa, exp, neg, trunc)

@@ -92,7 +92,7 @@ read_entire_file :: proc(name: string, allocator: runtime.Allocator) -> (data: [
 
 	// TODO(bill): Is this correct logic?
 	total: int
-	data = make([]byte, size, allocator) or_return
+	data = make([]byte, size, allocator) or return
 	for {
 		n: int
 		n, err = read(f, data[total:])

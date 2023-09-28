@@ -18,7 +18,7 @@ rat_set_f64 :: proc(dst: ^Rat, f: f64, allocator := context.allocator) -> (err: 
 	mantissa := bits & (1<<52 - 1)
 	exp := int((bits>>52) & EXP_MASK)
 	
-	int_set_from_integer(&dst.b, 1) or_return
+	int_set_from_integer(&dst.b, 1) or return
 	
 	switch exp {
 	case EXP_MASK:
@@ -38,13 +38,13 @@ rat_set_f64 :: proc(dst: ^Rat, f: f64, allocator := context.allocator) -> (err: 
 		shift -= 1
 	}
 	
-	int_set_from_integer(&dst.a, mantissa) or_return
+	int_set_from_integer(&dst.a, mantissa) or return
 	dst.a.sign = .Negative if f < 0 else .Zero_or_Positive
 	
 	if shift > 0 {
-		internal_int_shl(&dst.b, &dst.b, shift) or_return
+		internal_int_shl(&dst.b, &dst.b, shift) or return
 	} else {
-		internal_int_shl(&dst.a, &dst.a, -shift) or_return
+		internal_int_shl(&dst.a, &dst.a, -shift) or return
 	}
 	
 	return internal_rat_norm(dst)
@@ -66,8 +66,8 @@ rat_set_frac_digit :: proc(dst: ^Rat, a, b: DIGIT, allocator := context.allocato
 		return .Division_by_Zero
 	}
 	context.allocator = allocator
-	internal_set(&dst.a, a) or_return
-	internal_set(&dst.b, b) or_return
+	internal_set(&dst.a, a) or return
+	internal_set(&dst.b, b) or return
 	return internal_rat_norm(dst)
 }
 
@@ -78,8 +78,8 @@ rat_set_frac_int :: proc(dst: ^Rat, a, b: ^Int, allocator := context.allocator) 
 		return .Division_by_Zero
 	}
 	context.allocator = allocator
-	internal_set(&dst.a, a) or_return
-	internal_set(&dst.b, b) or_return
+	internal_set(&dst.a, a) or return
+	internal_set(&dst.b, b) or return
 	return internal_rat_norm(dst)
 }
 
@@ -87,39 +87,39 @@ rat_set_int :: proc(dst: ^Rat, a: ^Int, allocator := context.allocator) -> (err:
 	assert_if_nil(dst)
 	assert_if_nil(a)
 	context.allocator = allocator
-	internal_set(&dst.a, a) or_return
-	internal_set(&dst.b, 1) or_return
+	internal_set(&dst.a, a) or return
+	internal_set(&dst.b, 1) or return
 	return
 }
 
 rat_set_digit :: proc(dst: ^Rat, a: DIGIT, allocator := context.allocator) -> (err: Error) {
 	assert_if_nil(dst)
 	context.allocator = allocator
-	internal_set(&dst.a, a) or_return
-	internal_set(&dst.b, 1) or_return
+	internal_set(&dst.a, a) or return
+	internal_set(&dst.b, 1) or return
 	return
 }
 
 rat_set_rat :: proc(dst, x: ^Rat, allocator := context.allocator) -> (err: Error) {
 	assert_if_nil(dst, x)
 	context.allocator = allocator
-	internal_set(&dst.a, &x.a) or_return
-	internal_set(&dst.b, &x.b) or_return
+	internal_set(&dst.a, &x.a) or return
+	internal_set(&dst.b, &x.b) or return
 	return
 }
 
 rat_set_u64 :: proc(dst: ^Rat, x: u64, allocator := context.allocator) -> (err: Error) {
 	assert_if_nil(dst)
 	context.allocator = allocator
-	internal_set(&dst.a, x) or_return
-	internal_set(&dst.b, 1) or_return
+	internal_set(&dst.a, x) or return
+	internal_set(&dst.b, 1) or return
 	return
 }
 rat_set_i64 :: proc(dst: ^Rat, x: i64, allocator := context.allocator) -> (err: Error) {
 	assert_if_nil(dst)
 	context.allocator = allocator
-	internal_set(&dst.a, x) or_return
-	internal_set(&dst.b, 1) or_return
+	internal_set(&dst.a, x) or return
+	internal_set(&dst.b, 1) or return
 	return
 }
 
@@ -128,9 +128,9 @@ rat_copy :: proc(dst, src: ^Rat, minimize := false, allocator := context.allocat
 	
 	assert_if_nil(dst, src)
 	context.allocator = allocator
-	int_copy(&dst.a, &src.a, minimize, allocator) or_return
-	int_copy(&dst.b, &src.b, minimize, allocator) or_return
-	internal_rat_norm(dst) or_return
+	int_copy(&dst.a, &src.a, minimize, allocator) or return
+	int_copy(&dst.b, &src.b, minimize, allocator) or return
+	internal_rat_norm(dst) or return
 	return nil
 }
 
@@ -150,18 +150,18 @@ internal_rat_norm :: proc(z: ^Rat, allocator := context.allocator) -> (err: Erro
 		z.a.sign = .Zero_or_Positive
 		fallthrough
 	case internal_is_zero(&z.b):
-		int_set_from_integer(&z.b, 1) or_return
+		int_set_from_integer(&z.b, 1) or return
 	case:
 		sign := z.a.sign
 		z.a.sign = .Zero_or_Positive
 		z.b.sign = .Zero_or_Positive
 		
 		f := &Int{}
-		internal_int_gcd(f, &z.a, &z.b) or_return
+		internal_int_gcd(f, &z.a, &z.b) or return
 		if !internal_int_equals_digit(f, 1) {
 			f.sign = .Zero_or_Positive
-			internal_int_div(&z.a, &z.a, f) or_return
-			internal_int_div(&z.b, &z.b, f) or_return
+			internal_int_div(&z.a, &z.a, f) or return
+			internal_int_div(&z.b, &z.b, f) or return
 		}
 		z.a.sign = sign	
 	}
@@ -217,7 +217,7 @@ internal_int_scale_denom :: proc(dst, x, y: ^Int, allocator := context.allocator
 	if internal_is_zero(y) {
 		return internal_set(dst, x)
 	}
-	int_mul(dst, x, y) or_return
+	int_mul(dst, x, y) or return
 	dst.sign = x.sign
 	return
 }
@@ -230,10 +230,10 @@ rat_add_rat :: proc(dst, x, y: ^Rat, allocator := context.allocator) -> (err: Er
 	a1, a2: Int
 	defer internal_destroy(&a1, &a2)
 	
-	internal_int_scale_denom(&a1, &x.a, &y.b)  or_return
-	internal_int_scale_denom(&a2, &y.a, &x.b)  or_return
-	int_add(&dst.a, &a1, &a2)                  or_return
-	internal_int_mul_denom(&dst.b, &x.b, &y.b) or_return
+	internal_int_scale_denom(&a1, &x.a, &y.b)  or return
+	internal_int_scale_denom(&a2, &y.a, &x.b)  or return
+	int_add(&dst.a, &a1, &a2)                  or return
+	internal_int_mul_denom(&dst.b, &x.b, &y.b) or return
 	return internal_rat_norm(dst)
 }
 
@@ -244,10 +244,10 @@ rat_sub_rat :: proc(dst, x, y: ^Rat, allocator := context.allocator) -> (err: Er
 	a1, a2 := &Int{}, &Int{}
 	defer internal_destroy(a1, a2)
 	
-	internal_int_scale_denom(a1, &x.a, &y.b)   or_return
-	internal_int_scale_denom(a2, &y.a, &x.b)   or_return
-	int_sub(&dst.a, a1, a2)                    or_return
-	internal_int_mul_denom(&dst.b, &x.b, &y.b) or_return
+	internal_int_scale_denom(a1, &x.a, &y.b)   or return
+	internal_int_scale_denom(a2, &y.a, &x.b)   or return
+	int_sub(&dst.a, a1, a2)                    or return
+	internal_int_mul_denom(&dst.b, &x.b, &y.b) or return
 	return internal_rat_norm(dst)
 }
 
@@ -256,17 +256,17 @@ rat_mul_rat :: proc(dst, x, y: ^Rat, allocator := context.allocator) -> (err: Er
 	context.allocator = allocator
 	
 	if x == y {
-		internal_sqr(&dst.a, &x.a)         or_return
+		internal_sqr(&dst.a, &x.a)         or return
 		if internal_is_zero(&x.b) {
-			internal_set(&dst.b, 1)    or_return
+			internal_set(&dst.b, 1)    or return
 		} else {
-			internal_sqr(&dst.a, &x.b) or_return
+			internal_sqr(&dst.a, &x.b) or return
 		}
 		return
 	}
 	
-	int_mul(&dst.a, &x.a, &y.a)                or_return
-	internal_int_mul_denom(&dst.b, &x.b, &y.b) or_return
+	int_mul(&dst.a, &x.a, &y.a)                or return
+	internal_int_mul_denom(&dst.b, &x.b, &y.b) or return
 	return internal_rat_norm(dst)
 }
 
@@ -279,10 +279,10 @@ rat_div_rat :: proc(dst, x, y: ^Rat, allocator := context.allocator) -> (err: Er
 	a, b := &Int{}, &Int{}
 	defer internal_destroy(a, b)
 	
-	internal_int_scale_denom(a, &x.a, &y.b) or_return
-	internal_int_scale_denom(b, &y.a, &x.b) or_return
-	internal_set(&dst.a, a) or_return
-	internal_set(&dst.b, b) or_return
+	internal_int_scale_denom(a, &x.a, &y.b) or return
+	internal_int_scale_denom(b, &y.a, &x.b) or return
+	internal_set(&dst.a, a) or return
+	internal_set(&dst.b, b) or return
 	internal_int_abs(&dst.a, &dst.a) 
 	internal_int_abs(&dst.b, &dst.b) 
 	dst.a.sign = .Negative if a.sign != b.sign else .Zero_or_Positive
@@ -291,27 +291,27 @@ rat_div_rat :: proc(dst, x, y: ^Rat, allocator := context.allocator) -> (err: Er
 
 
 rat_abs :: proc(dst, x: ^Rat, allocator := context.allocator) -> (err: Error) {
-	rat_set_rat(dst, x, allocator)          or_return
-	internal_abs(&dst.a, &dst.a, allocator) or_return
+	rat_set_rat(dst, x, allocator)          or return
+	internal_abs(&dst.a, &dst.a, allocator) or return
 	return
 }
 rat_neg :: proc(dst, x: ^Rat, allocator := context.allocator) -> (err: Error) {
-	rat_set_rat(dst, x, allocator)          or_return
-	internal_neg(&dst.a, &dst.a, allocator) or_return
+	rat_set_rat(dst, x, allocator)          or return
+	internal_neg(&dst.a, &dst.a, allocator) or return
 	return
 }
 
 
 rat_is_positive :: proc(z: ^Rat, allocator := context.allocator) -> (ok: bool, err: Error) {
 	assert_if_nil(z)
-	a := int_is_positive(&z.a, allocator) or_return
-	b := int_is_positive(&z.b, allocator) or_return
+	a := int_is_positive(&z.a, allocator) or return
+	b := int_is_positive(&z.b, allocator) or return
 	return !(a ~ b), nil
 }
 rat_is_negative :: proc(z: ^Rat, allocator := context.allocator) -> (ok: bool, err: Error) {
 	assert_if_nil(z)
-	a := int_is_positive(&z.a, allocator) or_return
-	b := int_is_positive(&z.b, allocator) or_return
+	a := int_is_positive(&z.a, allocator) or return
+	b := int_is_positive(&z.b, allocator) or return
 	return (a ~ b), nil
 }
 
@@ -385,22 +385,22 @@ internal_rat_to_float :: proc($T: typeid, z: ^Rat, allocator := context.allocato
 	exp := alen - blen
 	a2, b2 := &Int{}, &Int{}
 	defer internal_destroy(a2, b2)
-	internal_int_abs(a2, a) or_return
-	internal_int_abs(b2, b) or_return
+	internal_int_abs(a2, a) or return
+	internal_int_abs(b2, b) or return
 	
 	if shift := MSIZE2 - exp; shift > 0 {
-		internal_int_shl(a2, a2, shift) or_return
+		internal_int_shl(a2, a2, shift) or return
 	} else if shift < 0 {
-		internal_int_shl(b2, b2, -shift) or_return
+		internal_int_shl(b2, b2, -shift) or return
 	}
 	
 	q, r := &Int{}, &Int{}
 	defer internal_destroy(q, r)
 	
-	internal_int_divmod(q, r, a2, b2) or_return
+	internal_int_divmod(q, r, a2, b2) or return
 	
 	has_rem := !internal_is_zero(r)
-	mantissa := internal_int_get_u64(q) or_return
+	mantissa := internal_int_get_u64(q) or return
 	
 	if mantissa>>MSIZE2 == 1 {
 		if mantissa&1 == 1 {
@@ -449,10 +449,10 @@ rat_compare :: proc(x, y: ^Rat, allocator := context.allocator) -> (comparison: 
 	context.allocator = allocator
 	
 	a, b: Int
-	internal_init_multi(&a, &b) or_return
+	internal_init_multi(&a, &b) or return
 	defer internal_destroy(&a, &b)
-	internal_int_scale_denom(&a, &x.a, &y.b) or_return
-	internal_int_scale_denom(&b, &y.a, &x.b) or_return
+	internal_int_scale_denom(&a, &x.a, &y.b) or return
+	internal_int_scale_denom(&b, &y.a, &x.b) or return
 	return int_compare(&a, &b)
 }
 
@@ -463,7 +463,7 @@ rat_add_int :: proc(dst, x: ^Rat, y: ^Int, allocator := context.allocator) -> (e
 	assert_if_nil(y)
 	
 	z: Rat
-	rat_set_int(&z, y, allocator) or_return
+	rat_set_int(&z, y, allocator) or return
 	defer internal_destroy(&z)
 	return rat_add_rat(dst, x, &z, allocator)
 }
@@ -473,7 +473,7 @@ rat_sub_int :: proc(dst, x: ^Rat, y: ^Int, allocator := context.allocator) -> (e
 	assert_if_nil(y)
 	
 	z: Rat
-	rat_set_int(&z, y, allocator) or_return
+	rat_set_int(&z, y, allocator) or return
 	defer internal_destroy(&z)
 	return rat_sub_rat(dst, x, &z, allocator)
 }
@@ -483,7 +483,7 @@ rat_mul_int :: proc(dst, x: ^Rat, y: ^Int, allocator := context.allocator) -> (e
 	assert_if_nil(y)
 	
 	z: Rat
-	rat_set_int(&z, y, allocator) or_return
+	rat_set_int(&z, y, allocator) or return
 	defer internal_destroy(&z)
 	return rat_mul_rat(dst, x, &z, allocator)
 }
@@ -493,7 +493,7 @@ rat_div_int :: proc(dst, x: ^Rat, y: ^Int, allocator := context.allocator) -> (e
 		return .Division_by_Zero
 	}
 	z: Rat
-	rat_set_int(&z, y, allocator) or_return
+	rat_set_int(&z, y, allocator) or return
 	defer internal_destroy(&z)
 	return rat_div_rat(dst, x, &z, allocator)
 }
@@ -504,7 +504,7 @@ int_add_rat :: proc(dst: ^Rat, x: ^Int, y: ^Rat, allocator := context.allocator)
 	assert_if_nil(dst, y)
 	
 	w: Rat
-	rat_set_int(&w, x, allocator) or_return
+	rat_set_int(&w, x, allocator) or return
 	defer internal_destroy(&w)
 	return rat_add_rat(dst, &w, y, allocator)
 }
@@ -514,7 +514,7 @@ int_sub_rat :: proc(dst: ^Rat, x: ^Int, y: ^Rat, allocator := context.allocator)
 	assert_if_nil(dst, y)
 	
 	w: Rat
-	rat_set_int(&w, x, allocator) or_return
+	rat_set_int(&w, x, allocator) or return
 	defer internal_destroy(&w)
 	return rat_sub_rat(dst, &w, y, allocator)
 }
@@ -524,7 +524,7 @@ int_mul_rat :: proc(dst: ^Rat, x: ^Int, y: ^Rat, allocator := context.allocator)
 	assert_if_nil(dst, y)
 	
 	w: Rat
-	rat_set_int(&w, x, allocator) or_return
+	rat_set_int(&w, x, allocator) or return
 	defer internal_destroy(&w)
 	return rat_mul_rat(dst, &w, y, allocator)
 }
@@ -534,7 +534,7 @@ int_div_rat :: proc(dst: ^Rat, x: ^Int, y: ^Rat, allocator := context.allocator)
 		return .Division_by_Zero
 	}
 	w: Rat
-	rat_set_int(&w, x, allocator) or_return
+	rat_set_int(&w, x, allocator) or return
 	defer internal_destroy(&w)
 	return rat_div_rat(dst, &w, y, allocator)
 }

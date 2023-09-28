@@ -12,7 +12,7 @@ save_to_file :: proc(output: string, img: ^Image, options := Options{}, allocato
 	out := &bytes.Buffer{}
 	defer bytes.buffer_destroy(out)
 
-	save_to_buffer(out, img, options) or_return
+	save_to_buffer(out, img, options) or return
 	write_ok := os.write_entire_file(output, out.buf[:])
 
 	return nil if write_ok else .Unable_To_Write_File

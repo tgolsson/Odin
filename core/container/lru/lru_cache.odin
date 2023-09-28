@@ -73,7 +73,7 @@ set :: proc(c: ^$C/Cache($Key, $Value), key: Key, value: Value) -> runtime.Alloc
 	}
 	else {
 		c.count += 1
-		e = new(Node(Key, Value), c.node_allocator) or_return
+		e = new(Node(Key, Value), c.node_allocator) or return
 	}
 
 	e.key = key

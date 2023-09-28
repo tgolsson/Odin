@@ -2120,6 +2120,16 @@ gb_internal gbFileError write_file_with_stripped_tokens(gbFile *f, AstFile *file
 					return gbFileError_Invalid;
 				}
 				written += 3;
+			} else if (token.kind == Token_or_return) {
+				if (!gb_file_write(f, "or return", 9)) {
+					return gbFileError_Invalid;
+				}
+				written += 9;
+			} else if (token.kind == Token_or_else) {
+				if (!gb_file_write(f, "or else", 7)) {
+					return gbFileError_Invalid;
+				}
+				written += 7;
 			} else {
 				return gbFileError_Invalid;
 			}

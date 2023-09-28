@@ -176,7 +176,7 @@ unmarshal_string_token :: proc(p: ^Parser, val: any, str: string, ti: ^reflect.T
 		return true
 		
 	case reflect.Type_Info_Integer:
-		i := strconv.parse_i128(str) or_return
+		i := strconv.parse_i128(str) or return
 		if assign_int(val, i) {
 			return true
 		}
@@ -184,7 +184,7 @@ unmarshal_string_token :: proc(p: ^Parser, val: any, str: string, ti: ^reflect.T
 			return true
 		}
 	case reflect.Type_Info_Float:
-		f := strconv.parse_f64(str) or_return
+		f := strconv.parse_f64(str) or return
 		if assign_int(val, f) {
 			return true
 		}
@@ -218,7 +218,7 @@ unmarshal_value :: proc(p: ^Parser, v: any) -> (err: Unmarshal_Error) {
 	switch &dst in v {
 	// Handle json.Value as an unknown type
 	case Value:
-		dst = parse_value(p) or_return
+		dst = parse_value(p) or return
 		return
 	}
 	
@@ -271,7 +271,7 @@ unmarshal_value :: proc(p: ^Parser, v: any) -> (err: Unmarshal_Error) {
 		
 	case .String:
 		advance_token(p)
-		str := unquote_string(token, p.spec, p.allocator) or_return
+		str := unquote_string(token, p.spec, p.allocator) or return
 		if unmarshal_string_token(p, any{v.data, ti.id}, str, ti) {
 			return nil
 		}
@@ -386,7 +386,7 @@ unmarshal_object :: proc(p: ^Parser, v: any, end_token: Token_Kind) -> (err: Unm
 				
 				field_ptr := rawptr(uintptr(v.data) + offset)
 				field := any{field_ptr, type.id}
-				unmarshal_value(p, field) or_return
+				unmarshal_value(p, field) or return
 					
 				if parse_comma(p) {
 					break struct_loop
@@ -394,7 +394,7 @@ unmarshal_object :: proc(p: ^Parser, v: any, end_token: Token_Kind) -> (err: Unm
 				continue struct_loop
 			} else {
 				// allows skipping unused struct fields
-				parse_value(p) or_return
+				parse_value(p) or return
 				if parse_comma(p) {
 					break struct_loop
 				}
@@ -411,7 +411,7 @@ unmarshal_object :: proc(p: ^Parser, v: any, end_token: Token_Kind) -> (err: Unm
 			raw_map.allocator = p.allocator
 		}
 		
-		elem_backing := bytes_make(t.value.size, t.value.align, p.allocator) or_return
+		elem_backing := bytes_make(t.value.size, t.value.align, p.allocator) or return
 		defer delete(elem_backing, p.allocator)
 		
 		map_backing_value := any{raw_data(elem_backing), t.value.id}
@@ -468,7 +468,7 @@ unmarshal_object :: proc(p: ^Parser, v: any, end_token: Token_Kind) -> (err: Unm
 			index_ptr := rawptr(uintptr(v.data) + uintptr(index*t.elem_size))
 			index_any := any{index_ptr, t.elem.id}
 			
-			unmarshal_value(p, index_any) or_return
+			unmarshal_value(p, index_any) or return
 			
 			if parse_comma(p) {
 				break enumerated_array_loop
@@ -515,7 +515,7 @@ unmarshal_array :: proc(p: ^Parser, v: any) -> (err: Unmarshal_Error) {
 			elem_ptr := rawptr(uintptr(base) + idx*uintptr(elem.size))
 			elem := any{elem_ptr, elem.id}
 			
-			unmarshal_value(p, elem) or_return
+			unmarshal_value(p, elem) or return
 			
 			if parse_comma(p) {
 				break
@@ -537,7 +537,7 @@ unmarshal_array :: proc(p: ^Parser, v: any) -> (err: Unmarshal_Error) {
 	#partial switch t in ti.variant {
 	case reflect.Type_Info_Slice:	
 		raw := (^mem.Raw_Slice)(v.data)
-		data := bytes_make(t.elem.size * int(length), t.elem.align, p.allocator) or_return
+		data := bytes_make(t.elem.size * int(length), t.elem.align, p.allocator) or return
 		raw.data = raw_data(data)
 		raw.len = int(length)
 			
@@ -545,7 +545,7 @@ unmarshal_array :: proc(p: ^Parser, v: any) -> (err: Unmarshal_Error) {
 		
 	case reflect.Type_Info_Dynamic_Array:
 		raw := (^mem.Raw_Dynamic_Array)(v.data)
-		data := bytes_make(t.elem.size * int(length), t.elem.align, p.allocator) or_return
+		data := bytes_make(t.elem.size * int(length), t.elem.align, p.allocator) or return
 		raw.data = raw_data(data)
 		raw.len = int(length)
 		raw.cap = int(length)

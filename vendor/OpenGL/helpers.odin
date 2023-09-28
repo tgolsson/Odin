@@ -128,7 +128,7 @@ compile_shader_from_source :: proc(shader_data: string, shader_type: Shader_Type
 	ShaderSource(shader_id, 1, &shader_data_copy, &length)
 	CompileShader(shader_id)
 
-	check_error(shader_id, shader_type, COMPILE_STATUS, GetShaderiv, GetShaderInfoLog) or_return
+	check_error(shader_id, shader_type, COMPILE_STATUS, GetShaderiv, GetShaderInfoLog) or return
 	ok = true
 	return
 }
@@ -145,31 +145,31 @@ create_and_link_program :: proc(shader_ids: []u32, binary_retrievable := false) 
 	}
 	LinkProgram(program_id)
 
-	check_error(program_id, Shader_Type.SHADER_LINK, LINK_STATUS, GetProgramiv, GetProgramInfoLog) or_return
+	check_error(program_id, Shader_Type.SHADER_LINK, LINK_STATUS, GetProgramiv, GetProgramInfoLog) or return
 	ok = true
 	return
 }
 
 load_compute_file :: proc(filename: string, binary_retrievable := false) -> (program_id: u32, ok: bool) {
-	cs_data := os.read_entire_file(filename) or_return
+	cs_data := os.read_entire_file(filename) or return
 	defer delete(cs_data)
 
 	// Create the shaders
-	compute_shader_id := compile_shader_from_source(string(cs_data), Shader_Type(COMPUTE_SHADER)) or_return
+	compute_shader_id := compile_shader_from_source(string(cs_data), Shader_Type(COMPUTE_SHADER)) or return
 	return create_and_link_program([]u32{compute_shader_id}, binary_retrievable)
 }
 
 load_compute_source :: proc(cs_data: string, binary_retrievable := false) -> (program_id: u32, ok: bool) {
 	// Create the shaders
-	compute_shader_id := compile_shader_from_source(cs_data, Shader_Type(COMPUTE_SHADER)) or_return
+	compute_shader_id := compile_shader_from_source(cs_data, Shader_Type(COMPUTE_SHADER)) or return
 	return create_and_link_program([]u32{compute_shader_id}, binary_retrievable)
 }
 
 load_shaders_file :: proc(vs_filename, fs_filename: string, binary_retrievable := false) -> (program_id: u32, ok: bool) {
-	vs_data := os.read_entire_file(vs_filename) or_return
+	vs_data := os.read_entire_file(vs_filename) or return
 	defer delete(vs_data)
 	
-	fs_data := os.read_entire_file(fs_filename) or_return
+	fs_data := os.read_entire_file(fs_filename) or return
 	defer delete(fs_data)
 
 	return load_shaders_source(string(vs_data), string(fs_data), binary_retrievable)
@@ -177,10 +177,10 @@ load_shaders_file :: proc(vs_filename, fs_filename: string, binary_retrievable :
 
 load_shaders_source :: proc(vs_source, fs_source: string, binary_retrievable := false) -> (program_id: u32, ok: bool) {
 	// actual function from here
-	vertex_shader_id := compile_shader_from_source(vs_source, Shader_Type.VERTEX_SHADER) or_return
+	vertex_shader_id := compile_shader_from_source(vs_source, Shader_Type.VERTEX_SHADER) or return
 	defer DeleteShader(vertex_shader_id)
 
-	fragment_shader_id := compile_shader_from_source(fs_source, Shader_Type.FRAGMENT_SHADER) or_return
+	fragment_shader_id := compile_shader_from_source(fs_source, Shader_Type.FRAGMENT_SHADER) or return
 	defer DeleteShader(fragment_shader_id)
 
 	return create_and_link_program([]u32{vertex_shader_id, fragment_shader_id}, binary_retrievable)

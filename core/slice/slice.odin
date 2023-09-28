@@ -264,7 +264,7 @@ concatenate :: proc(a: []$T/[]$E, allocator := context.allocator) -> (res: T, er
 	for s in a {
 		n += len(s)
 	}
-	res = make(T, n, allocator) or_return
+	res = make(T, n, allocator) or return
 	i := 0
 	for s in a {
 		i += copy(res[i:], s)
@@ -380,7 +380,7 @@ as_ptr :: proc(array: $T/[]$E) -> [^]E {
 
 @(require_results)
 mapper :: proc(s: $S/[]$U, f: proc(U) -> $V, allocator := context.allocator) -> (r: []V, err: runtime.Allocator_Error) #optional_allocator_error {
-	r = make([]V, len(s), allocator) or_return
+	r = make([]V, len(s), allocator) or return
 	for v, i in s {
 		r[i] = f(v)
 	}
@@ -411,7 +411,7 @@ filter :: proc(s: $S/[]$U, f: proc(U) -> bool, allocator := context.allocator) -
 scanner :: proc (s: $S/[]$U, initializer: $V, f: proc(V, U) -> V, allocator := context.allocator) -> (res: []V, err: runtime.Allocator_Error) #optional_allocator_error {
 	if len(s) == 0 { return }
 
-	res = make([]V, len(s), allocator) or_return
+	res = make([]V, len(s), allocator) or return
 	p := as_ptr(s)
 	q := as_ptr(res)
 	r := initializer

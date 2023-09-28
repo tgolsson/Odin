@@ -26,7 +26,7 @@ int_bit_and :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: E
 	assert_if_nil(dest, a, b)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(a, b) or_return
+	internal_clear_if_uninitialized(a, b) or return
 	return #force_inline internal_int_and(dest, a, b)
 }
 bit_and :: proc { int_bit_and, }
@@ -38,7 +38,7 @@ int_bit_or :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: Er
 	assert_if_nil(dest, a, b)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(a, b) or_return
+	internal_clear_if_uninitialized(a, b) or return
 	return #force_inline internal_int_or(dest, a, b)
 }
 bit_or :: proc { int_bit_or, }
@@ -50,7 +50,7 @@ int_bit_xor :: proc(dest, a, b: ^Int, allocator := context.allocator) -> (err: E
 	assert_if_nil(dest, a, b)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(a, b) or_return
+	internal_clear_if_uninitialized(a, b) or return
 	return #force_inline internal_int_xor(dest, a, b)
 }
 bit_xor :: proc { int_bit_xor, }
@@ -65,7 +65,7 @@ int_bit_complement :: proc(dest, src: ^Int, allocator := context.allocator) -> (
 	assert_if_nil(dest, src)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(dest, src) or_return
+	internal_clear_if_uninitialized(dest, src) or return
 	return #force_inline internal_int_complement(dest, src)
 }
 bit_complement :: proc { int_bit_complement, }
@@ -95,7 +95,7 @@ int_shr_signed :: proc(dest, src: ^Int, bits: int, allocator := context.allocato
 	assert_if_nil(dest, src)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(dest, src) or_return
+	internal_clear_if_uninitialized(dest, src) or return
 	return #force_inline internal_int_shr_signed(dest, src, bits)
 }
 
@@ -108,7 +108,7 @@ int_shl :: proc(dest, src: ^Int, bits: int, allocator := context.allocator) -> (
 	assert_if_nil(dest, src)
 	context.allocator = allocator
 
-	internal_clear_if_uninitialized(dest, src) or_return
+	internal_clear_if_uninitialized(dest, src) or return
 	return #force_inline internal_int_shl(dest, src, bits)
 }
 shl :: proc { int_shl, }

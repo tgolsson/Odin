@@ -129,7 +129,7 @@ Scratch_Allocator :: struct {
 }
 
 scratch_allocator_init :: proc(s: ^Scratch_Allocator, size: int, backup_allocator := context.allocator) -> Allocator_Error {
-	s.data = make_aligned([]byte, size, 2*align_of(rawptr), backup_allocator) or_return
+	s.data = make_aligned([]byte, size, 2*align_of(rawptr), backup_allocator) or return
 	s.curr_offset = 0
 	s.prev_allocation = nil
 	s.backup_allocator = backup_allocator
@@ -932,7 +932,7 @@ tracking_allocator_proc :: proc(allocator_data: rawptr, mode: Allocator_Mode,
 			location = loc,
 		})
 	} else {
-		result = data.backing.procedure(data.backing.data, mode, size, alignment, old_memory, old_size, loc) or_return
+		result = data.backing.procedure(data.backing.data, mode, size, alignment, old_memory, old_size, loc) or return
 	}
 	result_ptr := raw_data(result)
 

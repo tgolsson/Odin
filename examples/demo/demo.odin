@@ -1786,19 +1786,7 @@ range_statements_with_multiple_return_values :: proc() {
 		data[i] = i32(i*i)
 	}
 
-	{
-		it := make_my_iterator(data)
-		for val in my_iterator(&it) {
-			fmt.println(val)
-		}
-	}
-	{
-		it := make_my_iterator(data)
-		for val, idx in my_iterator(&it) {
-			fmt.println(val, idx)
-		}
-	}
-	{
+	{ // Manual Style
 		it := make_my_iterator(data)
 		for {
 			val, _, cond := my_iterator(&it)
@@ -1806,6 +1794,25 @@ range_statements_with_multiple_return_values :: proc() {
 				break
 			}
 			fmt.println(val)
+		}
+	}
+	{ // or break
+		it := make_my_iterator(data)
+		loop: for {
+			val, _ := my_iterator(&it) or break loop
+			fmt.println(val)
+		}
+	}
+	{ // first value
+		it := make_my_iterator(data)
+		for val in my_iterator(&it) {
+			fmt.println(val)
+		}
+	}
+	{ // first and second value
+		it := make_my_iterator(data)
+		for val, idx in my_iterator(&it) {
+			fmt.println(val, idx)
 		}
 	}
 }
@@ -2178,6 +2185,70 @@ or_return_operator :: proc() {
 	foo_2()
 }
 
+
+or_break_and_or_continue_operators :: proc() {
+	fmt.println("\n#'or break' and 'or continue'")
+	// The concept of 'or break' and 'or continue' is very similar to that of 'or return'.
+	// The difference is that unlike 'or return', the value does not get returned from
+	// the current procedure but rather discarded if it is 'false' or not 'nil', and then
+	// the specified branch (i.e. break or continue).
+	// The or branch expression can be labelled if a specific statement needs to be used.
+
+	Error :: enum {
+		None,
+		Something_Bad,
+		Something_Worse,
+		The_Worst,
+		Your_Mum,
+	}
+
+	caller_1 :: proc() -> Error {
+		return .Something_Bad
+	}
+
+	caller_2 :: proc() -> (int, Error) {
+		return 123, .Something_Worse
+	}
+	caller_3 :: proc() -> (int, int, Error) {
+		return 123, 345, .None
+	}
+
+	for { // common approach
+		err := caller_1()
+		if err != nil {
+			break
+		}
+	}
+	for { // or break approach
+		caller_1() or break
+	}
+
+	for { // or break approach with multiple values
+		n := caller_2() or break
+		_ = n
+	}
+
+	loop: for { // or break approach with named label
+		n := caller_2() or break loop
+		_ = n
+	}
+
+	for { // or continue
+		x, y := caller_3() or continue
+		_, _ = x, y
+
+		break
+	}
+
+	continue_loop: for { // or continue with named label
+		x, y := caller_3() or continue continue_loop
+		_, _ = x, y
+
+		break
+	}
+
+}
+
 arbitrary_precision_mathematics :: proc() {
 	fmt.println("\n# core:math/big")
 
@@ -2479,7 +2550,7 @@ main :: proc() {
 			parts of the core and vendor package collections.
 	*/
 
-	when true {
+	when false {
 		the_basics()
 		control_flow()
 		named_proc_return_parameters()
@@ -2513,7 +2584,10 @@ main :: proc() {
 		relative_data_types()
 		or_else_operator()
 		or_return_operator()
+		or_break_and_or_continue_operators()
 		arbitrary_precision_mathematics()
 		matrix_type()
 	}
+
+	or_break_and_or_continue_operators()
 }

@@ -232,6 +232,10 @@ gb_internal Ast *clone_ast(Ast *node, AstFile *f) {
 	case Ast_OrReturnExpr:
 		n->OrReturnExpr.expr = clone_ast(n->OrReturnExpr.expr, f);
 		break;
+	case Ast_OrBranchExpr:
+		n->OrBranchExpr.expr  = clone_ast(n->OrBranchExpr.expr, f);
+		n->OrBranchExpr.label = clone_ast(n->OrBranchExpr.label, f);
+		break;
 	case Ast_TypeAssertion:
 		n->TypeAssertion.expr = clone_ast(n->TypeAssertion.expr, f);
 		n->TypeAssertion.type = clone_ast(n->TypeAssertion.type, f);
@@ -539,6 +543,9 @@ gb_internal Ast *ast_unary_expr(AstFile *f, Token op, Ast *expr) {
 	case Ast_OrReturnExpr:
 		syntax_error_with_verbose(expr, "'%.*s' within an unary expression not wrapped in parentheses (...)", LIT(token_or_something_string(expr->OrReturnExpr.token.kind)));
 		break;
+	case Ast_OrBranchExpr:
+		syntax_error_with_verbose(expr, "'or %.*s' within an unary expression not wrapped in parentheses (...)", LIT(expr->OrBranchExpr.token.string));
+		break;
 	}
 
 	result->UnaryExpr.op = op;
@@ -563,10 +570,16 @@ gb_internal Ast *ast_binary_expr(AstFile *f, Token op, Ast *left, Ast *right) {
 	case Ast_OrReturnExpr:
 		syntax_error_with_verbose(left, "'%.*s' within a binary expression not wrapped in parentheses (...)", LIT(token_or_something_string(left->OrReturnExpr.token.kind)));
 		break;
+	case Ast_OrBranchExpr:
+		syntax_error_with_verbose(left, "'or %.*s' within a binary expression not wrapped in parentheses (...)", LIT(left->OrBranchExpr.token.string));
+		break;
 	}
 	if (right) switch (right->kind) {
 	case Ast_OrReturnExpr:
 		syntax_error_with_verbose(right, "'%.*s' within a binary expression not wrapped in parentheses (...)", LIT(token_or_something_string(right->OrReturnExpr.token.kind)));
+		break;
+	case Ast_OrBranchExpr:
+		syntax_error_with_verbose(right, "'or %.*s' within a binary expression not wrapped in parentheses (...)", LIT(right->OrBranchExpr.token.string));
 		break;
 	}
 
@@ -805,6 +818,14 @@ gb_internal Ast *ast_or_return_expr(AstFile *f, Ast *expr, Token const &token) {
 	Ast *result = alloc_ast_node(f, Ast_OrReturnExpr);
 	result->OrReturnExpr.expr = expr;
 	result->OrReturnExpr.token = token;
+	return result;
+}
+
+gb_internal Ast *ast_or_branch_expr(AstFile *f, Ast *expr, Token const &token, Ast *label) {
+	Ast *result = alloc_ast_node(f, Ast_OrBranchExpr);
+	result->OrBranchExpr.expr = expr;
+	result->OrBranchExpr.token = token;
+	result->OrBranchExpr.label = label;
 	return result;
 }
 
@@ -1743,11 +1764,17 @@ gb_internal Ast *strip_or_return_expr(Ast *node) {
 		if (node == nullptr) {
 			return node;
 		}
-		if (node->kind == Ast_OrReturnExpr) {
+		switch (node->kind) {
+		case Ast_OrReturnExpr:
 			node = node->OrReturnExpr.expr;
-		} else if (node->kind == Ast_ParenExpr) {
+			break;
+		case Ast_OrBranchExpr:
+			node = node->OrBranchExpr.expr;
+			break;
+		case Ast_ParenExpr:
 			node = node->ParenExpr.expr;
-		} else {
+			break;
+		default:
 			return node;
 		}
 	}
@@ -2885,6 +2912,9 @@ gb_internal void parse_check_or_return(Ast *operand, char const *msg) {
 	case Ast_OrReturnExpr:
 		syntax_error_with_verbose(operand, "'%.*s' use within %s is not wrapped in parentheses (...)", msg, LIT(token_or_something_string(operand->OrReturnExpr.token.kind)));
 		break;
+	case Ast_OrBranchExpr:
+		syntax_error_with_verbose(operand, "'or %.*s' use within %s is not wrapped in parentheses (...)", msg, LIT(operand->OrBranchExpr.token.string));
+		break;
 	}
 }
 
@@ -3038,8 +3068,19 @@ gb_internal Ast *parse_atom_expr(AstFile *f, Ast *operand, bool lhs) {
 					operand = ast_or_else_expr(f, operand, tok, parse_binary_expr(f, lhs, 1));
 					ok = true;
 					break;
+				case Token_break:
+				case Token_continue:
+					{
+						Ast *label = nullptr;
+						advance_token(f);
+						if (f->curr_token.kind == Token_Ident) {
+							label = parse_ident(f);
+						}
+						operand = ast_or_branch_expr(f, operand, tok, label);
+					}
+					break;
 				default:
-					syntax_error(f->curr_token, "Expected one of the following after the keyword 'or': return, else; got %.*s", LIT(token_strings[f->curr_token.kind]));
+					syntax_error(f->curr_token, "Expected one of the following after the keyword 'or': 'return', 'else', 'break', 'continue'; got %.*s", LIT(token_strings[f->curr_token.kind]));
 					break;
 				}
 

@@ -8187,7 +8187,7 @@ gb_internal ExprKind check_or_return_expr(CheckerContext *c, Operand *o, Ast *no
 	}
 
 	if (c->in_defer) {
-		error(node, "'or_return' cannot be used within a defer statement");
+		error(node, "'or return' cannot be used within a defer statement");
 	}
 
 	return Expr_Expr;
@@ -10504,13 +10504,13 @@ gb_internal gbString write_expr_to_string(gbString str, Ast *node, bool shorthan
 
 	case_ast_node(oe, OrElseExpr, node);
 		str = write_expr_to_string(str, oe->x, shorthand);
-		str = gb_string_appendc(str, " or_else ");
+		str = gb_string_append_fmt(str, " %.*s ", LIT(token_or_something_string(oe->token.kind)));
 		str = write_expr_to_string(str, oe->y, shorthand);
 	case_end;
 
 	case_ast_node(oe, OrReturnExpr, node);
 		str = write_expr_to_string(str, oe->expr, shorthand);
-		str = gb_string_appendc(str, " or_return");
+		str = gb_string_append_fmt(str, " %.*s", LIT(token_or_something_string(oe->token.kind)));
 	case_end;
 
 	case_ast_node(pe, ParenExpr, node);

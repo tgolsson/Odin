@@ -134,6 +134,20 @@ String const token_strings[] = {
 #undef TOKEN_KIND
 };
 
+String token_or_something_string(TokenKind kind) {
+	switch (kind) {
+	case Token_return:
+		return str_lit("or return");
+	case Token_else:
+		return str_lit("or else");
+	case Token_break:
+		return str_lit("or break");
+	case Token_continue:
+		return str_lit("or continue");
+	}
+	return token_strings[kind];
+}
+
 
 struct KeywordHashEntry {
 	u32       hash;

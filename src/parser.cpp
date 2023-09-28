@@ -535,8 +535,10 @@ gb_internal Ast *ast_tag_expr(AstFile *f, Token token, Token name, Ast *expr) {
 gb_internal Ast *ast_unary_expr(AstFile *f, Token op, Ast *expr) {
 	Ast *result = alloc_ast_node(f, Ast_UnaryExpr);
 
-	if (expr && expr->kind == Ast_OrReturnExpr) {
-		syntax_error_with_verbose(expr, "'or_return' within an unary expression not wrapped in parentheses (...)");
+	if (expr) switch (expr->kind) {
+	case Ast_OrReturnExpr:
+		syntax_error_with_verbose(expr, "'%.*s' within an unary expression not wrapped in parentheses (...)", LIT(token_or_something_string(expr->OrReturnExpr.token.kind)));
+		break;
 	}
 
 	result->UnaryExpr.op = op;
@@ -557,11 +559,15 @@ gb_internal Ast *ast_binary_expr(AstFile *f, Token op, Ast *left, Ast *right) {
 		right = ast_bad_expr(f, op, op);
 	}
 
-	if (left->kind == Ast_OrReturnExpr) {
-		syntax_error_with_verbose(left, "'or_return' within a binary expression not wrapped in parentheses (...)");
+	if (left) switch (left->kind) {
+	case Ast_OrReturnExpr:
+		syntax_error_with_verbose(left, "'%.*s' within a binary expression not wrapped in parentheses (...)", LIT(token_or_something_string(left->OrReturnExpr.token.kind)));
+		break;
 	}
-	if (right->kind == Ast_OrReturnExpr) {
-		syntax_error_with_verbose(right, "'or_return' within a binary expression not wrapped in parentheses (...)");
+	if (right) switch (right->kind) {
+	case Ast_OrReturnExpr:
+		syntax_error_with_verbose(right, "'%.*s' within a binary expression not wrapped in parentheses (...)", LIT(token_or_something_string(right->OrReturnExpr.token.kind)));
+		break;
 	}
 
 	result->BinaryExpr.op = op;
@@ -2878,11 +2884,7 @@ gb_internal void parse_check_or_return(Ast *operand, char const *msg) {
 	}
 	switch (operand->kind){
 	case Ast_OrReturnExpr:
-		if (operand->OrReturnExpr.token.kind == Token_or_return) {
-			syntax_error_with_verbose(operand, "'or_return' use within %s is not wrapped in parentheses (...)", msg);
-		} else if (operand->OrReturnExpr.token.kind == Token_return) {
-			syntax_error_with_verbose(operand, "'or return' use within %s is not wrapped in parentheses (...)", msg);
-		}
+		syntax_error_with_verbose(operand, "'%.*s' use within %s is not wrapped in parentheses (...)", msg, LIT(token_or_something_string(operand->OrReturnExpr.token.kind)));
 		break;
 	}
 }

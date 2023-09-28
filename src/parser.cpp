@@ -3077,6 +3077,9 @@ gb_internal Ast *parse_atom_expr(AstFile *f, Ast *operand, bool lhs) {
 							label = parse_ident(f);
 						}
 						operand = ast_or_branch_expr(f, operand, tok, label);
+
+						// NOTE(bill): prevent silly nesting
+						loop = false;
 					}
 					break;
 				default:

@@ -3340,10 +3340,17 @@ gb_internal lbValue lb_build_expr_internal(lbProcedure *p, Ast *expr) {
 		lb_emit_if(p, lb_emit_try_has_value(p, rhs), then, else_);
 		lb_start_block(p, then);
 
-		lbValue res = lb_emit_conv(p, lhs, type);
+		lbValue res = {};
+		if (lhs.value) {
+			res = lb_emit_conv(p, lhs, type);
+		}
 
 		lb_emit_jump(p, done);
 		lb_start_block(p, else_);
+
+		if (lhs.value) {
+			res = lb_const_nil(p->module, type);
+		}
 
 		if (block != nullptr) {
 			lb_emit_defer_stmts(p, lbDeferExit_Branch, block);

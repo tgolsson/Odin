@@ -114,6 +114,7 @@ TOKEN_KIND(Token__KeywordBegin, ""), \
 	TOKEN_KIND(Token_distinct,    "distinct"),    \
 	TOKEN_KIND(Token_using,       "using"),       \
 	TOKEN_KIND(Token_context,     "context"),     \
+	TOKEN_KIND(Token_or,          "or"),          \
 	TOKEN_KIND(Token_or_else,     "or_else"),     \
 	TOKEN_KIND(Token_or_return,   "or_return"),   \
 	TOKEN_KIND(Token_asm,         "asm"),         \

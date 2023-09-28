@@ -17,6 +17,11 @@ gb_internal bool file_allow_newline(AstFile *f) {
 	return !is_strict;
 }
 
+gb_internal bool file_style_enforce(AstFile *f) {
+	return build_context.strict_style || ast_file_vet_style(f);
+}
+
+
 gb_internal Token token_end_of_line(AstFile *f, Token tok) {
 	u8 const *start = f->tokenizer.start + tok.pos.offset;
 	u8 const *s = start;
@@ -1474,6 +1479,8 @@ gb_internal Token expect_operator(AstFile *f) {
 		// okay
 	} else if (prev.kind == Token_if || prev.kind == Token_when) {
 		// okay
+	} else if (prev.kind == Token_or) {
+		// okay
 	} else if (prev.kind == Token_or_else || prev.kind == Token_or_return) {
 		// okay
 	} else if (!gb_is_between(prev.kind, Token__OperatorBegin+1, Token__OperatorEnd-1)) {
@@ -2866,10 +2873,21 @@ gb_internal Ast *parse_call_expr(AstFile *f, Ast *operand) {
 }
 
 gb_internal void parse_check_or_return(Ast *operand, char const *msg) {
-	if (operand && operand->kind == Ast_OrReturnExpr) {
-		syntax_error_with_verbose(operand, "'or_return' use within %s is not wrapped in parentheses (...)", msg);
+	if (operand == nullptr) {
+		return;
+	}
+	switch (operand->kind){
+	case Ast_OrReturnExpr:
+		if (operand->OrReturnExpr.token.kind == Token_or_return) {
+			syntax_error_with_verbose(operand, "'or_return' use within %s is not wrapped in parentheses (...)", msg);
+		} else if (operand->OrReturnExpr.token.kind == Token_return) {
+			syntax_error_with_verbose(operand, "'or return' use within %s is not wrapped in parentheses (...)", msg);
+		}
+		break;
 	}
 }
+
+gb_internal Ast *parse_binary_expr(AstFile *f, bool lhs, i32 prec_in);
 
 gb_internal Ast *parse_atom_expr(AstFile *f, Ast *operand, bool lhs) {
 	if (operand == nullptr) {
@@ -2998,8 +3016,38 @@ gb_internal Ast *parse_atom_expr(AstFile *f, Ast *operand, bool lhs) {
 			break;
 
 		case Token_or_return:
+			if (file_style_enforce(f)) {
+				syntax_error(f->curr_token, "'or_return' has been deprecated in favour of 'or return' (no underscore)");
+			}
 			operand = ast_or_return_expr(f, operand, expect_token(f, Token_or_return));
 			break;
+
+		case Token_or:
+			{
+				Token token_or = expect_token(f, Token_or);
+				bool ok = false;
+				Token tok = f->curr_token;
+				switch (tok.kind) {
+				case Token_return:
+					operand = ast_or_return_expr(f, operand, expect_token(f, Token_return));
+					ok = true;
+					break;
+				case Token_else:
+					expect_token(f, Token_else);
+					operand = ast_or_else_expr(f, operand, tok, parse_binary_expr(f, lhs, 1));
+					ok = true;
+					break;
+				default:
+					syntax_error(f->curr_token, "Expected one of the following after the keyword 'or': return, else; got %.*s", LIT(token_strings[f->curr_token.kind]));
+					break;
+				}
+
+				if (ok && tok.pos.line > token_or.pos.line) {
+					syntax_error(tok, "'or' and '%.*s' must be on the same line", LIT(tok.string));
+				}
+			}
+			break;
+
 
 		case Token_OpenBrace:
 			if (!lhs && is_literal_type(operand) && f->expr_level >= 0) {
@@ -3189,6 +3237,9 @@ gb_internal Ast *parse_binary_expr(AstFile *f, bool lhs, i32 prec_in) {
 			if (op.kind == Token_or_else) {
 				// NOTE(bill): easier to handle its logic different with its own AST kind
 				expr = ast_or_else_expr(f, expr, op, right);
+				if (file_style_enforce(f)) {
+					syntax_error(expr, "'or_else' has been deprecated in favour of 'or else' (no underscore)");
+				}
 			} else {
 				expr = ast_binary_expr(f, op, expr, right);
 			}

@@ -2053,7 +2053,7 @@ relative_data_types :: proc() {
 }
 
 or_else_operator :: proc() {
-	fmt.println("\n#'or_else'")
+	fmt.println("\n#'or else'")
 	{
 		m: map[string]int
 		i: int
@@ -2062,33 +2062,33 @@ or_else_operator :: proc() {
 		if i, ok = m["hellope"]; !ok {
 			i = 123
 		}
-		// The above can be mapped to 'or_else'
-		i = m["hellope"] or_else 123
+		// The above can be mapped to 'or else'
+		i = m["hellope"] or else 123
 
 		assert(i == 123)
 	}
 	{
-		// 'or_else' can be used with type assertions too, as they
+		// 'or else' can be used with type assertions too, as they
 		// have optional ok semantics
 		v: union{int, f64}
 		i: int
-		i = v.(int) or_else  123
-		i = v.? or_else 123 // Type inference magic
+		i = v.(int) or else 123
+		i = v.? or else 123 // Type inference magic
 		assert(i == 123)
 
 		m: Maybe(int)
-		i = m.? or_else 456
+		i = m.? or else 456
 		assert(i == 456)
 	}
 }
 
 or_return_operator :: proc() {
-	fmt.println("\n#'or_return'")
-	// The concept of 'or_return' will work by popping off the end value in a multiple
+	fmt.println("\n#'or return'")
+	// The concept of 'or return' will work by popping off the end value in a multiple
 	// valued expression and checking whether it was not 'nil' or 'false', and if so,
 	// set the end return value to value if possible. If the procedure only has one
 	// return value, it will do a simple return. If the procedure had multiple return
-	// values, 'or_return' will require that all parameters be named so that the end
+	// values, 'or return' will require that all parameters be named so that the end
 	// value could be assigned to by name and then an empty return could be called.
 
 	Error :: enum {
@@ -2118,25 +2118,25 @@ or_return_operator :: proc() {
 		}
 
 		// The above idiom can be transformed into the following
-		n1 := caller_2() or_return
+		n1 := caller_2() or return
 
 
 		// And if the expression is 1-valued, it can be used like this
-		caller_1() or_return
+		caller_1() or return
 		// which is functionally equivalent to
 		if err1 := caller_1(); err1 != nil {
 			return err1
 		}
 
-		// Multiple return values still work with 'or_return' as it only
+		// Multiple return values still work with 'or return' as it only
 		// pops off the end value in the multi-valued expression
-		n0, n1 = caller_3() or_return
+		n0, n1 = caller_3() or return
 
 		return .None
 	}
 	foo_2 :: proc() -> (n: int, err: Error) {
 		// It is more common that your procedure turns multiple values
-		// If 'or_return' is used within a procedure multiple parameters (2+),
+		// If 'or return' is used within a procedure multiple parameters (2+),
 		// then all the parameters must be named so that the remaining parameters
 		// so that a bare 'return' statement can be used
 
@@ -2148,11 +2148,11 @@ or_return_operator :: proc() {
 		}
 
 		// The above idiom can be transformed into the following
-		y := caller_2() or_return
+		y := caller_2() or return
 		_ = y
 
 		// And if the expression is 1-valued, it can be used like this
-		caller_1() or_return
+		caller_1() or return
 
 		// which is functionally equivalent to
 		if err1 := caller_1(); err1 != nil {

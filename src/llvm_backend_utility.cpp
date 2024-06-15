@@ -865,6 +865,7 @@ gb_internal void lb_restore_context_ptr(lbProcedure *p) {
 		LLVMValueRef instr = LLVMGetLastInstruction(p->curr_block->block);
 		if (instr == nullptr || !LLVMIsATerminatorInst(instr)) {
 			lb_addr_store(p, p->module->thread_local_context_ptr, end->ctx.addr);
+			lb_add_debug_context_variable(p, lb_addr(end->ctx.addr));
 		}
 	}
 }

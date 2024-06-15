@@ -218,8 +218,9 @@ gb_internal void lb_close_scope(lbProcedure *p, lbDeferExitKind kind, lbBlock *b
 		} else {
 			break;
 		}
-
 	}
+
+	lb_restore_context_ptr(p);
 
 	p->scope_index -= 1;
 	array_pop(&p->scope_stack);
@@ -1964,6 +1965,7 @@ gb_internal void lb_build_return_stmt_internal(lbProcedure *p, lbValue res) {
 		// Check for terminator in the defer stmts
 		LLVMValueRef instr = LLVMGetLastInstruction(p->curr_block->block);
 		if (!lb_is_instr_terminating(instr)) {
+			lb_restore_context_ptr(p);
 			LLVMBuildRetVoid(p->builder);
 		}
 	} else {
@@ -1994,6 +1996,7 @@ gb_internal void lb_build_return_stmt_internal(lbProcedure *p, lbValue res) {
 		// Check for terminator in the defer stmts
 		LLVMValueRef instr = LLVMGetLastInstruction(p->curr_block->block);
 		if (!lb_is_instr_terminating(instr)) {
+			lb_restore_context_ptr(p);
 			LLVMBuildRet(p->builder, ret_val);
 		}
 	}

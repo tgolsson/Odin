@@ -166,6 +166,9 @@ gb_internal lbContextData *lb_push_context_onto_stack_from_implicit_parameter(lb
 	GB_ASSERT(pt->kind == Type_Proc);
 	GB_ASSERT(pt->Proc.calling_convention == ProcCC_Odin);
 
+/*
+
+
 	String name = str_lit("__.context_ptr");
 
 	Entity *e = alloc_entity_param(nullptr, make_token_ident(name), t_context_ptr, false, false);
@@ -180,11 +183,19 @@ gb_internal lbContextData *lb_push_context_onto_stack_from_implicit_parameter(lb
 	lbAddr ctx_addr = {};
 	ctx_addr.kind = lbAddr_Context;
 	ctx_addr.addr = param;
+*/
+
+	lbAddr ctx_addr = {};
+	ctx_addr.kind = lbAddr_Context;
+	ctx_addr.addr = lb_addr_load(p, p->module->thread_local_context_ptr);
 
 	lbContextData *cd = array_add_and_get(&p->context_stack);
 	cd->ctx = ctx_addr;
 	cd->scope_index = -1;
 	cd->uses = +1; // make sure it has been used already
+
+	lb_restore_context_ptr(p);
+
 	return cd;
 }
 
@@ -193,6 +204,9 @@ gb_internal lbContextData *lb_push_context_onto_stack(lbProcedure *p, lbAddr ctx
 	lbContextData *cd = array_add_and_get(&p->context_stack);
 	cd->ctx = ctx;
 	cd->scope_index = p->scope_index;
+
+	lb_restore_context_ptr(p);
+
 	return cd;
 }
 
@@ -3006,8 +3020,38 @@ gb_internal bool lb_generate_code(lbGenerator *gen) {
 		array_add(&target_machines, target_machine);
 	}
 
+	auto add_context_ptr_to_module = [](lbModule *m) {
+		if (m->thread_local_context_ptr.addr.value != nullptr) {
+			return;
+		}
+
+		String name = str_lit("__$context_ptr");
+		Type *type = t_context_ptr;
+
+		Scope *scope = nullptr;
+		Entity *e = alloc_entity_variable(scope, make_token_ident(name), type);
+		lbValue g = {};
+		g.type = alloc_type_pointer(type);
+		g.value = LLVMAddGlobal(m->mod, lb_type(m, type), cast(char const *)name.text);
+		LLVMSetThreadLocal(g.value, true);
+
+		lb_add_entity(m, e, g);
+		lb_add_member(m, name, g);
+
+		m->thread_local_context_ptr = lb_addr(g);
+
+		if (&m->gen->default_module != m) {
+			LLVMSetExternallyInitialized(g.value, true);
+		} else {
+			LLVMSetInitializer(g.value, LLVMConstNull(lb_type(m, type)));
+		}
+	};
+
 	for (auto const &entry : gen->modules) {
 		lbModule *m = entry.value;
+
+		add_context_ptr_to_module(m);
+
 		if (m->debug_builder) { // Debug Info
 			for (auto const &file_entry : info->files) {
 				AstFile *f = file_entry.value;

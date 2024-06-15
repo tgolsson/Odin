@@ -1277,6 +1277,8 @@ gb_internal lbValue lb_addr_load(lbProcedure *p, lbAddr const &addr) {
 		}
 		a.value = LLVMBuildPointerCast(p->builder, a.value, lb_type(p->module, t_context_ptr), "");
 
+		lb_addr_store(p, p->module->thread_local_context_ptr, a);
+
 		if (addr.ctx.sel.index.count > 0) {
 			lbValue b = lb_emit_deep_field_gep(p, a, addr.ctx.sel);
 			return lb_emit_load(p, b);

@@ -191,7 +191,7 @@ gb_internal void lb_add_function_type_attributes(LLVMValueRef fn, lbFunctionType
 	// 	}
 	// } 
 	LLVMSetFunctionCallConv(fn, cc_kind);
-	if (calling_convention == ProcCC_Odin) {
+	if (false && calling_convention == ProcCC_Odin) {
 		unsigned context_index = arg_index;
 		LLVMAddAttributeAtIndex(fn, context_index, noalias_attr);
 		LLVMAddAttributeAtIndex(fn, context_index, nonnull_attr);
@@ -1547,7 +1547,7 @@ gb_internal LB_ABI_INFO(lb_get_abi_info) {
 
 	// NOTE(bill): this is handled here rather than when developing the type in `lb_type_internal_for_procedures_raw`
 	// This is to make it consistent when and how it is handled
-	if (calling_convention == ProcCC_Odin) {
+	if (false && calling_convention == ProcCC_Odin) {
 		// append the `context` pointer
 		lbArgType context_param = lb_arg_type_direct(LLVMPointerType(LLVMInt8TypeInContext(c), 0));
 		array_add(&ft->args, context_param);

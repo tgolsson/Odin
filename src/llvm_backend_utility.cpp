@@ -859,10 +859,19 @@ gb_internal lbValue lb_emit_any_cast(lbProcedure *p, lbValue value, Type *type, 
 	return lb_addr_load(p, lb_emit_any_cast_addr(p, value, type, pos));
 }
 
-
+gb_internal void lb_restore_context_ptr(lbProcedure *p) {
+	if (p->context_stack.count > 0) {
+		auto *end = &p->context_stack[p->context_stack.count-1];
+		LLVMValueRef instr = LLVMGetLastInstruction(p->curr_block->block);
+		if (instr == nullptr || !LLVMIsATerminatorInst(instr)) {
+			lb_addr_store(p, p->module->thread_local_context_ptr, end->ctx.addr);
+		}
+	}
+}
 
 gb_internal lbAddr lb_find_or_generate_context_ptr(lbProcedure *p) {
 	if (p->context_stack.count > 0) {
+		lb_restore_context_ptr(p);
 		return p->context_stack[p->context_stack.count-1].ctx;
 	}
 

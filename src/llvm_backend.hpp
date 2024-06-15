@@ -162,6 +162,8 @@ struct lbModule {
 
 	RwMutex values_mutex;
 
+	lbAddr thread_local_context_ptr;
+
 	PtrMap<Entity *, lbValue> values;           
 	PtrMap<Entity *, lbAddr>  soa_values;       
 	StringMap<lbValue>  members;

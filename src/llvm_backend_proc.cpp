@@ -410,7 +410,7 @@ gb_internal lbProcedure *lb_create_dummy_procedure(lbModule *m, String link_name
 	}
 
 	isize parameter_index = 0;
-	if (pt->Proc.calling_convention == ProcCC_Odin) {
+	if (false && pt->Proc.calling_convention == ProcCC_Odin) {
 		lb_add_proc_attribute_at_index(p, offset+parameter_index, "noalias");
 		lb_add_proc_attribute_at_index(p, offset+parameter_index, "nonnull");
 		lb_add_proc_attribute_at_index(p, offset+parameter_index, "nocapture");
@@ -817,6 +817,10 @@ gb_internal Array<lbValue> lb_value_to_array(lbProcedure *p, gbAllocator const &
 
 gb_internal lbValue lb_emit_call_internal(lbProcedure *p, lbValue value, lbValue return_ptr, Array<lbValue> const &processed_args, Type *abi_rt, lbAddr context_ptr, ProcInlining inlining) {
 	GB_ASSERT(p->module->ctx == LLVMGetTypeContext(LLVMTypeOf(value.value)));
+	bool implicit_context_ptr = false;
+	if (!implicit_context_ptr) {
+		context_ptr = {};
+	}
 
 	unsigned arg_count = cast(unsigned)processed_args.count;
 	if (return_ptr.value != nullptr) {

@@ -509,7 +509,7 @@ _unmarshal_array :: proc(d: Decoder, v: any, ti: ^reflect.Type_Info, hdr: Header
 		raw           := (^mem.Raw_Dynamic_Array)(v.data)
 		raw.data       = raw_data(data) 
 		raw.len        = 0
-		raw.cap        = length
+		raw.cap        = scap
 		raw.allocator  = context.allocator
 
 		_ = assign_array(d, raw, t.elem, length) or_return
